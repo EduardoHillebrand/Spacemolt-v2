@@ -1,0 +1,5 @@
+{
+  "hillebot": { "current": "miner", "intended": null },
+  "ironvex": { "current": "miner", "intended": "artisan" },
+  "medici": { "current": "trader", "intended": null }
+}
