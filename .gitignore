@@ -14,3 +14,4 @@ node_modules/
 # editores/SO
 .DS_Store
 Thumbs.db
+scripts/*.log
