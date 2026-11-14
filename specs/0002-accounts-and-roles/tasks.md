@@ -44,3 +44,21 @@ Cada item é um passo pequeno e checável. Commit direto na `main` ao fechar cad
 
 Itens 7–8 são validação manual, não teste de CI — ficam como checklist feito uma vez antes
 de considerar a feature pronta, igual à `0001-connection-layer`.
+
+## Revisão pendente (2026-11-14, descoberta ao especificar `0007`–`0011`)
+
+A pesquisa feita antes de escrever `0009-skill-navigation` e `0010-skill-maintenance`
+mostrou que navegação e manutenção não são skills que competem no loop (spec `0006`) — são
+módulos compartilhados em `app/core/`, chamados de dentro de `mining`/`trading`/`crafting`.
+Isso significa que `CATALOG` em `catalog.ts` está desatualizado:
+
+- `SkillName` deveria perder `"navigation"` e `"maintenance"` como variantes válidas (não há
+  objeto `Skill` registrável com esses nomes).
+- `miner.skills`: `["mining", "navigation", "maintenance"]` → `["mining"]`.
+- `trader.skills`: `["trading", "navigation"]` → `["trading"]`.
+- `artisan.skills`: `[]` → `["crafting"]` (quando `0011` for implementada).
+
+9. [ ] **Aplicar a revisão acima em `catalog.ts`** — marcado como task de `0007` (ver
+   `specs/0007-skill-mining/tasks.md`, item 1), não desta spec, porque é `0007` quem
+   primeiro precisa que `catalog.ts` reflita a skill `mining` isolada. Este item fica aqui
+   só como registro da decisão; o checkbox real de implementação vive em `0007`.

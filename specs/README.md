@@ -42,13 +42,13 @@ Repositório: `https://github.com/EduardoHillebrand/Spacemolt-v2.git`.
 | 0002 | `accounts-and-roles` | ✅ especificado | Conta = instância isolada com papel (minerador/comerciante/artesão), evolução de papéis |
 | 0003 | `memory` | ✅ especificado | Estado operacional + lições aprendidas + integração com Captain's Log |
 | 0004 | `knowledge-base-integration` | ✅ especificado | Como o agente consulta `knowledge_base/` via embeddings (`nomic-embed-text`) |
-| 0005 | `devlog-channel` | 📋 a especificar | Canal de eventos estruturados (constituição, regra 10) — toda feature emite nele desde o início, nasce antes das skills |
-| 0006 | `agent-loop` | 📋 a especificar | Orquestração: decide qual skill rodar pro papel da conta (`0002`), mantém o ciclo vivo, aciona replanejamento (constituição, regra 2.1) |
-| 0007 | `skill-mining` | 📋 a especificar | Inclui gestão de frota multi-nave especializada por recurso (ore/gas/ice) |
-| 0008 | `skill-trading` | 📋 a especificar | |
-| 0009 | `skill-navigation` | 📋 a especificar | |
-| 0010 | `skill-maintenance` | 📋 a especificar | |
-| 0011 | `skill-crafting` | 📋 a especificar | Papel futuro do artesão |
+| 0005 | `devlog-channel` | ✅ especificado | Canal de eventos estruturados (constituição, regra 10) — toda feature emite nele desde o início, nasce antes das skills |
+| 0006 | `agent-loop` | ✅ especificado | Orquestração: decide qual skill rodar pro papel da conta (`0002`), mantém o ciclo vivo, aciona replanejamento (constituição, regra 2.1) |
+| 0007 | `skill-mining` | ✅ especificado | Skill real (Planner/Executor). Frota multi-nave simultânea explicitamente fora de escopo (API só pilota 1 nave ativa por vez) |
+| 0008 | `skill-trading` | ✅ especificado | Skill real (Planner/Executor). Arbitragem dentro do Solarian; usa memória de longo prazo (`0003`) como catálogo de rotas conhecidas |
+| 0009 | `skill-navigation` | ✅ especificado | **Não é skill registrada no loop** — módulo compartilhado em `app/core/` (`goTo`), consumido por `0007`/`0008`/`0011`. Ver nota de arquitetura no `spec.md` |
+| 0010 | `skill-maintenance` | ✅ especificado | **Não é skill registrada no loop** — módulo compartilhado em `app/core/` (`checkAndRepair`/`checkInsurance`), consumido na mesma parada que `0007`/`0008`/`0011` já fariam |
+| 0011 | `skill-crafting` | ✅ especificado | Skill real (Planner/Executor), papel futuro do artesão. Assume material já no storage da instalação — aquisição é escopo de `0013` |
 | 0012 | `dashboard-ui` | 📋 a especificar | UI mobile via `spacemolt.hillebrand.ia.br`, só consome o canal de devlog (`0005`) — não o define |
 | 0013 | `inter-account-coordination` | 📋 a especificar (futuro) | Transferência explícita de bens/créditos entre contas |
 
