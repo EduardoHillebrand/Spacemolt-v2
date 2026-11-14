@@ -68,8 +68,10 @@ app/
   quando o erro trouxer isso) como camada extra — redundante com a lib em parte, mas é
   exatamente o requisito 5 da spec e não custa garantir.
 - Reautenticação (requisito 2): delegada à lib (reconexão com backoff já documentada).
-  `game_client.ts` só reage ao evento de reconexão da lib pra atualizar `initialState` se
-  precisar.
+  > **Achado na validação manual**: isso só funciona se `Account` for criada com
+  > `reconnect: true` **e** uma função `credentials` (`{kind: "login", username, password}`)
+  > — vem **desligado por padrão**. Sem isso, uma queda de conexão nunca se recupera.
+  > `game_client.ts` já passa as duas opções.
 
 ## Processo por conta (constituição, regra 4)
 

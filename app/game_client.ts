@@ -14,7 +14,14 @@ interface Credentials {
 export async function connect(accountName: string): Promise<GameSession> {
   const credentials = readCredentials(accountName);
 
-  const account = new Account({ url: "wss://game.spacemolt.com/ws/v2" });
+  const account = new Account({
+    url: "wss://game.spacemolt.com/ws/v2",
+    // `reconnect` vem desligado por padrão na lib (requer `credentials` pra re-autenticar
+    // sozinha) — sem isto, uma queda de conexão nunca se recupera e o requisito 2 da spec
+    // (reautenticação automática) não se cumpre.
+    reconnect: true,
+    credentials: () => ({ kind: "login", username: credentials.username, password: credentials.password }),
+  });
   await account.connect();
   await account.login({ username: credentials.username, password: credentials.password });
 

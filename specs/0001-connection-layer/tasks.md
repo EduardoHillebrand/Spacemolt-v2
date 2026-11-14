@@ -39,17 +39,21 @@ Cada item é um passo pequeno e checável. Commit direto na `main` ao fechar cad
    após N tentativas, esgotamento, HTTP 429). `engines.node: ">=22"` documentado no
    `package.json`.
 
-8. [ ] **Validação manual — isolamento**: conectar as 3 contas (`hillebot`, `ironvex`,
-   `medici`) e confirmar que cada uma recebe seu próprio estado inicial, sem se misturar.
-   → critério de sucesso 1 da `spec.md`.
+8. [x] **Validação manual — isolamento** (`scripts/validate-isolation.ts`): conectadas as
+   3 contas simultaneamente — `hillebot`/`ironvex`/`medici`, cada uma com seu próprio
+   `username`/`credits`/`ship`, sem mistura. → critério de sucesso 1 confirmado.
 
-9. [ ] **Validação manual — reautenticação**: forçar/aguardar expiração de sessão numa
-   conta e confirmar que a próxima chamada funciona sem reiniciar o processo.
-   → critério de sucesso 2 da `spec.md`.
+9. [x] **Validação manual — reautenticação** (`scripts/validate-reconnect.ts`): forçado
+   fechamento anormal do WebSocket cru (sem passar por `account.close()`, que suprimiria o
+   reconnect deliberadamente) e confirmado que a chamada seguinte funcionou sem reiniciar o
+   processo. **Achado crítico**: isso só funcionou depois de corrigir `game_client.ts` pra
+   passar `reconnect: true` + `credentials` — vêm desligados por padrão na lib (ver
+   `plan.md`). → critério de sucesso 2 confirmado.
 
-10. [ ] **Validação manual — rate limit**: disparar chamadas em sequência rápida numa conta
-    e confirmar que as respostas chegam certas, só mais lentas, sem erro não tratado.
-    → critério de sucesso 3 da `spec.md`.
+10. [x] **Validação manual — rate limit** (`scripts/validate-rate-limit.ts`): 40 chamadas
+    `get_status` disparadas em paralelo numa conta — todas (`40/40`) voltaram `ok`, em
+    ~5.9s (claramente serializadas/throttled por baixo), nenhum erro não tratado.
+    → critério de sucesso 3 confirmado.
 
 ## Nota sobre granularidade
 
