@@ -88,9 +88,16 @@ contra escrita parcial corromper o único registro cumulativo que não é recons
 ### Captain's Log nativo como rede de segurança (requisito 6)
 
 Um helper pequeno, não um mecanismo novo: se `list(accountName)` devolver vazio (conta nova
-pro agente, mesmo que já exista no jogo), usa o texto do Captain's Log que veio no
-`initialState` do login (spec `0001`) como primeiro contexto pro Planner, em vez de partir de
-zero absoluto. Não grava isso em `memory.json` automaticamente — é só um contexto de partida.
+pro agente, mesmo que já exista no jogo), usa o texto do Captain's Log como primeiro
+contexto pro Planner, em vez de partir de zero absoluto. Não grava isso em `memory.json`
+automaticamente — é só um contexto de partida.
+
+> **Correção feita na implementação**: o texto do Captain's Log **não** vem dentro de
+> `GameSession.initialState` (a lib não expõe esse campo no payload de login). Vem pedindo
+> explicitamente via `session.call("spacemolt_social", "captains_log_list", {})`, que devolve
+> a entrada mais recente (`structuredContent.entry.entry`). Validado contra uma conta real —
+> encontrou uma entrada de fato escrita pelo agente antigo (`D:\Projects\SpaceMolt`) há
+> meses. Comportamento pro resto do sistema é o mesmo, só a origem do dado mudou.
 
 ## O que NÃO entra aqui
 

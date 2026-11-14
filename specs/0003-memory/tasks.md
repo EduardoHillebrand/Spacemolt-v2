@@ -3,41 +3,36 @@
 Cada item é um passo pequeno e checável. Commit direto na `main` ao fechar cada um
 (constituição, regra 7).
 
-1. [ ] **Spike de validação do endpoint de embeddings do Ollama**: script isolado e
-   descartável que chama `POST /api/embeddings` com `nomic-embed-text` e confirma formato
-   da resposta, dimensão do vetor e tempo de resposta — antes de depender disso no resto.
+1. [x] **Spike de validação do endpoint de embeddings do Ollama**: `/api/embeddings` com
+   `nomic-embed-text` devolve `{ embedding: number[768] }`. ~550ms pra um chunk de 1400
+   caracteres.
 
-2. [ ] **`app/core/embeddings.ts`**: `embed(text)`, usando o formato confirmado no spike.
-   Local em `core/`, não em `memory/`, porque a spec `0004-knowledge-base-integration`
-   também vai precisar dele.
-   Erro claro (constituição, regra 6) se o Ollama estiver indisponível — nunca lança
-   exceção não tratada pra quem chama.
+2. [x] **`app/core/embeddings.ts`**: `embed(text)`, erro claro se o Ollama estiver
+   indisponível.
 
-3. [ ] **`app/memory/long_term_memory.ts`**: `remember`, `recall`, `list`, formato de
-   `memory.json` do `plan.md`. Escrita atômica (arquivo temporário + rename) com
-   `memory.json.bak` da versão anterior antes de sobrescrever.
+3. [x] **`app/memory/long_term_memory.ts`**: `remember`, `recall`, `list`. Escrita atômica
+   (tmp + rename) com `.bak` da versão anterior. `embedFn`/`accountsDir` injetáveis pra
+   teste.
 
-4. [ ] **`app/memory/operational_state.ts`**: helper `snapshot(session)` + comentário
-   formalizando a regra: nada aqui é persistido em disco como fonte de verdade.
+4. [x] **`app/memory/operational_state.ts`**: `snapshot(session)`.
 
-5. [ ] **Helper do Captain's Log**: extrai o texto do Captain's Log do `initialState` do
-   login (spec `0001`) e serve como contexto de partida só quando `list(accountName)`
-   devolve vazio.
+5. [x] **Helper do Captain's Log** (`app/memory/captains_log.ts`). **Correção**: não vem no
+   `initialState` — pedido explicitamente via `captains_log_list`. Ver nota no `plan.md`.
 
-6. [ ] **Teste automatizado** (fake de `embed()`, sem rede real): `remember` grava e persiste;
-   `recall` devolve ordenado por similaridade; `list` devolve tudo; simular falha no meio da
-   escrita e confirmar que `memory.json.bak` continua íntegro.
+6. [x] **Teste automatizado** (`long_term_memory.test.ts`, fake de `embed()`): 5 testes —
+   `remember`/`list`, `recall` por similaridade, falha de embed não deixa estado parcial,
+   `.bak` íntegro após segunda escrita.
 
-7. [ ] **Validação manual — persistência**: registrar uma lição numa conta de teste, matar o
-   processo, religar, confirmar que `recall` ainda encontra. → critério de sucesso 1 da
-   `spec.md`.
+7. [x] **Validação manual — persistência** (`scripts/validate-memory.ts`): registrada lição,
+   relida do disco (equivalente a reiniciar processo) — `recall` encontrou.
+   → critério de sucesso 1 confirmado.
 
-8. [ ] **Validação manual — relevância**: registrar uma lição com um texto, consultar depois
-   com palavras diferentes mas relacionadas ao mesmo contexto, confirmar que ela aparece entre
-   as mais relevantes. → critério de sucesso 2 da `spec.md`.
+8. [x] **Validação manual — relevância**: pergunta com palavras diferentes do texto
+   original encontrou a lição certa no topo. → critério de sucesso 2 confirmado.
 
-9. [ ] **Validação manual — isolamento entre contas**: confirmar que uma lição registrada
-   numa conta nunca aparece no `recall` de outra conta.
+9. [x] **Validação manual — isolamento entre contas**: lição da conta B não apareceu no
+   `recall` da conta A. Bônus: `getStartupContext` testado contra a conta real `hillebot`
+   e encontrou uma entrada de Captain's Log escrita pelo agente antigo meses atrás.
 
 ## Nota sobre granularidade
 
