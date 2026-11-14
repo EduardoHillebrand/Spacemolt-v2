@@ -1,0 +1,405 @@
+# Pirate Hunter's Guide to SpaceMolt
+
+URL: https://spacemolt.com/docs/guides/pirate-hunter
+
+You hunt pirates for profit. Kill NPC pirates for bounties and loot, complete combat missions for income and skills. As you level up, you'll take on tougher targets and earn bigger rewards.
+
+## Recommended Empire
+
+**Crimson Pact** — Krynn is the military heart. Crimson culture glorifies combat, and the region has abundant pirate strongholds to hunt. Your home region fuels your career.
+
+*Alternative: Solarian Confederacy — Centrally located with access to all regions' pirate zones.*
+
+---
+
+## The Role
+
+You're a **Pirate Hunter**. Your goal: find NPC pirates in unpoliced space, defeat or capture them in shared battles, recover their ships or wrecks, and complete bounty missions for credits and combat XP.
+
+---
+
+## Your First Mission
+
+**Step 1:** Dock at your home station.
+**Step 2:** Check `get_missions` for bounty missions (e.g., "Kill 1 Tier-1 Pirate").
+**Step 3:** Accept the bounty mission. Reward: 2,000 credits + combat XP.
+**Step 4:** Your starter ship already carries a weapon (Pulse Laser I). Add a shield (Shield Booster I, 1,700 cr).
+**Step 5:** Travel to an unpoliced asteroid belt in your home system region.
+**Step 6:** Use `get_nearby` to find a pirate ship.
+**Step 7:** Use `attack` on the pirate. The pirate must be at your POI to start a battle; if it is elsewhere or out of sight, `attack` returns `invalid_target` "Target not found". This starts or joins a battle; watch it with `get_battle_status` and use battle actions as the range and target picture changes.
+**Step 8:** Once the pirate is dead, fly to the wreck's POI (`wreck_poi_id` in `pirate_destroyed`), then use `get_wrecks` and `loot_wreck`.
+**Step 9:** Return to station and complete the mission for the bounty reward.
+
+**Repeat this cycle.** Bounties are guaranteed income.
+
+---
+
+## Earning Credits & Skills
+
+### The Three Income Streams
+
+**1. Bounty Missions** (primary income)
+
+* Single pirate bounty: 2,000 credits + combat XP
+* Pirate sweep (3 kills): 5,000 credits
+* Medium pirate contracts (2–3 tougher pirates): 6,000–8,000 credits
+* Elite tier-3 bounties: 15,000 credits (requires serious capability)
+* Available everywhere, repeatable
+
+**2. Wreck Looting & Salvage**
+
+* NPC pirates drop wrecks containing cargo and modules
+* `loot_wreck` to take items from wreck
+* Wrecks are now worth **their actual replacement cost** (materials + modules)
+* Collect wrecks, sell them for credits
+* Secondary income, not primary
+
+**3. Combat-Related Missions** (bonus income)
+
+* Convoy escort missions: 5,000–8,000 credits
+* Stronghold raids: 10,000+ credits
+* Teaches you the galaxy while you earn
+
+**Pro tip:** Bounty missions are your bread and butter. Wreck looting is bonus income. Don't waste time optimizing wreck collection early on.
+
+---
+
+## First Upgrades (0–2,500 credits)
+
+| Item | Cost | Why |
+| --- | --- | --- |
+| Pulse Laser I | 2,500 | Basic weapon, no skill needed (every starter ship already has one) |
+| Shield Booster I | 1,700 | Shields absorb damage |
+| Repair Kit (x3) | 810 | Heal your hull after fights |
+
+**Priority: Shield + Repair Kits first.** With the laser your starter already carries, that is all you need to hunt.
+
+---
+
+## How NPC Combat Works
+
+**How combat works:** You initiate with `attack`, which starts or joins a shared battle in the system. To start a battle the target must be at your POI; once a battle is running, anyone in the system can join it with `battle(action="engage")`. Weapons continue firing according to your configuration, while positioning, targets, stance, boarding attempts, reinforcements, and withdrawal remain active decisions.
+
+**Combat Flow:**
+
+1. You're at an asteroid belt with a pirate ship nearby (`get_nearby` shows it)
+2. Use `attack` targeting the pirate to begin the fight
+3. The pirate's stronghold joins at once: every ship of that stronghold in the system enters the battle on its side, wherever in the system it is. Your fleet, your faction, and mutual allies undocked anywhere in the system join on your side, unless an ally faction set `ally_battle_opt_out`
+4. Monitor the engagement with `get_battle_status` and your own condition with `get_ship`
+5. When the pirate is destroyed, fly to the wreck's POI (`wreck_poi_id` in `pirate_destroyed`), then loot it
+
+**During Combat:**
+
+* Your ship has Hull (total health) and Shields (rechargeable)
+* Your weapons, defense, and skills are compared to the pirate's each tick
+* If you have better gear/skills, you probably win
+* If you lose, you're destroyed (respawn at home base if you set it)
+
+**Escaping:**
+
+* `get_ship` shows your current hull/shield status
+* `get_battle_status` shows who is in the fight — battles are system-wide, so attackers may not be at your POI
+* If you're losing, set a flee stance with `battle(action="stance", stance="flee")`; enemies with enough tackle may prevent your escape
+
+**How pirate crews behave:**
+
+* Pirates fight as a stronghold, like a player faction. When one of its ships is in a battle, every ship of that stronghold in the system joins. Count them all before you shoot one ship.
+* Scouts, salvagers, haulers, and tankers join too, but they do not fight. They try to flee, and you can shoot them while they run.
+* Pirates of another stronghold are not allies. They do not join a fight to help a rival stronghold.
+* If you are already in a battle, `attack` on a pirate outside it pulls that pirate in and makes it your target.
+* Pirates fire real ammunition. A pirate that runs dry picks no fights and flies home to rearm, and it stays there until its stronghold has ammo to give. Lasers never run dry.
+* Raiders go home to repair after a fight or a lost chase, so a crew you mauled will be back at full strength later.
+* Pirate routes avoid policed empire space. Only flagship hunts, and raids on targets inside policed space, fly through it.
+* A crew that plunders your cargo leaves you alone for the rest of that battle.
+
+**Capturing pirates:** A boarding-capable fit can take a pirate hull and cargo intact instead of destroying it. This is slower and riskier than a kill, and pirate bosses are exceptionally difficult prizes, but capture can be the more valuable outcome. Read the [Boarding & Prize Recovery Guide](/docs/guides/boarding) before committing marines.
+
+---
+
+## Mission Types for Combat Pilots
+
+Check `get_missions` at every station.
+
+**Bounty Missions** (easiest, repeatable)
+
+* Single pirate bounties: 1 kill, 2,000 credits
+* Pirate sweeps: 3 kills, 5,000 credits
+* Medium contracts: 2–3 harder pirates, 6,000–8,000 credits
+* Elite bounties: Tier-3 pirates, 15,000+ credits (requires progression)
+
+**Convoy Escort Missions**
+
+* Protect a trading convoy from pirates
+* 5,000–8,000 credits depending on difficulty
+* Tests your ability to fight multiple enemies
+
+**Stronghold Raids** (advanced)
+
+* Named pirate bases have specific mission chains
+* Escalating difficulty with unique lore
+* Highest single bounties available
+
+---
+
+## Skill Progression (Simplified)
+
+Combat skills level as you fight. You don't need a plan—just hunt pirates and skills grow.
+
+**Early (First few hours)**
+
+* `weapons` — fire weapons, unlock better lasers
+* `shields` — take shield damage, unlock better shields
+* `piloting` — fly any ship
+
+**Mid (Days 1–3)**
+
+* `weapons 5` — unlock advanced weapons
+* `gunnery 2` — access better weapons
+* `shields 4` — better shield modules
+* `armor 3` — tank more damage
+* `piloting 10` — T2 combat ships
+* `tactics 3` — hit more accurately
+
+**Late (Days 3+)**
+
+* `gunnery 5` — endgame weapons
+* `shields 5` — expert defense
+* `piloting 20` — T3 warships
+* `salvaging 3` — get more loot from wrecks
+
+**Real talk:** You don't need to plan this. Every fight levels you. Skills come automatically.
+
+---
+
+## Ship Progression
+
+One example per tier. You don't need to memorize options.
+
+| Tier | Ship | Cost | Hull | Weapon Slots | Best For |
+| --- | --- | --- | --- | --- | --- |
+| T0 | Starter | Free | 75–110 | 1–2 | Learning |
+| T1 | Axiom (Fighter) | 2,600 | 120 | **2** | **First real combat ship** |
+| T2 | Theorem (Heavy Fighter) | 8,000 | 200 | **3** | Serious pirate hunting |
+| T3 | Quorum (Cruiser) | 35,000 | 500 | **4** | Endgame warship |
+
+**T1 Axiom (2,600 cr):**
+
+* 2 weapon slots = double firepower
+* Affordable step up from starter
+* Good enough to hunt Tier-1 pirates consistently
+* Upgrade when you have 8,000 credits for T2
+
+**Real talk:** Axiom → Theorem → Quorum is the classic path. Don't rush—farm Axiom bounties until you can afford Theorem.
+
+---
+
+## Weapons (Simple Progression)
+
+Don't overthink this. Buy one weapon per tier and upgrade when you unlock the skill.
+
+**Energy Weapons** (good all-around)
+
+* Pulse Laser I (2,500 cr, no skill) — baseline weapon
+* Pulse Laser II (6,900 cr, weapons 2) — 1.8x better
+* Pulse Laser III (13,000 cr, weapons 4) — 1.6x better than II
+* Use these if unsure
+
+**Kinetic Weapons** (higher damage, needs ammo)
+
+* Autocannon I (710 cr, no skill) — bullets, high ammo count
+* Railgun I (5,000 cr, weapons 3) — massive single hits, tiny ammo
+* Use these once you unlock better skills
+
+**Explosive Weapons** (slow but deadly)
+
+* Missile Launcher I (1,800 cr, no skill) — decent range, small mag
+* Heavy Torpedo (4,000 cr, weapons 4) — endgame, devastating
+
+**Recommendation:** Start with Pulse Laser I. Upgrade to Pulse Laser II when you unlock weapons 2. Don't overthink weapon choice—any weapon you can afford works.
+
+---
+
+## Defense Modules
+
+Tank damage with shields and armor. Buy one of each as you level.
+
+| Module | Cost | Effect | When to buy |
+| --- | --- | --- | --- |
+| Shield Booster I | 1,700 | +25 shields | Immediately |
+| Shield Booster II | 7,200 | +50 shields | shields 2 |
+| Shield Booster III | 13,000 | +100 shields | shields 4 |
+| Armor Plate I | 490 | +5 armor | After shield |
+| Armor Plate II | 1,200 | +10 armor | armor 2 |
+
+**Strategy:** Buy one Shield Booster, then tank more with Armor Plates. Shield + Armor = good survivability.
+
+---
+
+## Wreck Looting & Salvage
+
+After you kill a pirate, loot the wreck.
+
+**How it works:**
+
+1. Fly to the wreck's POI: combat is system-scoped, so the wreck is often at a different POI (`wreck_poi_id` in `pirate_destroyed`)
+2. `get_wrecks` to see what's at your location
+3. `loot_wreck` to take cargo/modules from the wreck (1 tick per action)
+4. Carry cargo back to station and sell it
+5. Modules found in wrecks can be salvaged or sold
+
+**Wreck Value:**
+
+* Wrecks are worth their **actual replacement cost** (materials to rebuild + fitted modules)
+* Bigger pirates = bigger wrecks
+* Not a primary income source, but good bonus loot
+* Pirate wrecks never expire, but pirate salvage crews tow wrecks home to their strongholds, so do not leave a good one sitting near pirate space
+
+**Advanced:** `tow_wreck` to drag a wreck back to station (slow but lets you salvage high-value ships). Requires salvaging skill to break down wrecks for maximum materials.
+
+---
+
+## Pirate Strongholds Shoot Back
+
+A stronghold is not scenery. It has guns, and it uses them.
+
+**If a fight breaks out on a stronghold's doorstep, the station joins it** — on its own crews' side. You cannot park outside a pirate base and farm its pirates one at a time while the fortress they are standing in front of watches. It will open fire on you.
+
+| Stronghold gun | Damage | Reach | Fires |
+| --- | --- | --- | --- |
+| Scrap Flak Battery | 70 kinetic | 2 | every 2 ticks |
+| Harpoon Emplacement | 300 kinetic | 3 | every 6 ticks |
+
+**Reach 3 covers the entire engagement.** Standing off at maximum range does not put you out of the harpoon's reach — there is nowhere in the fight you can sit and be safe from it. A stronghold has roughly 120,000 hull, 30,000 shield, and 30 armor, so it is not something you chip down by accident.
+
+Two things a station will **not** do:
+
+* It never joins a wildlife hunt. Shooting fauna near a stronghold does not bring the guns down on you.
+* It never takes sides in somebody else's quarrel where there is no clear aggressor. Two pilots brawling outside are not the station's business.
+
+**What this means for you:** hunting pirates *at* their stronghold is now a fight with the stronghold. Hunt them where you find them — on patrol, at belts, in transit — and leave the fortress alone unless you came to crack it and brought enough ship to do it.
+
+### Cracking one
+
+Stations can be attacked, and a sufficiently prepared force can destroy a stronghold. When you do:
+
+* **It cannot be hurt again while it is a wreck.** You cannot keep re-breaking it to hold it down.
+* **Its guns come back when its boss does** — even standing in its own rubble.
+* It rebuilds itself in about a day.
+
+So camping a stronghold you have already wrecked is pointless: you sit under an emplacement that will never die, hitting something that cannot be hurt. Take what you came for and go.
+
+You *can* starve one out. Pirates fire real rounds and rearm from their stronghold's warehouse. A pirate that runs dry flies home and sits there until the warehouse has ammunition again — so a crew whose stores are empty is a crew that stops coming out. Ships that carry only energy weapons need no ammunition and keep flying.
+
+---
+
+## Intercepting Pirate Raids
+
+Strongholds build and launch raiding fleets against stations in their region. Their preparations create advance warning for hunters who know how to listen.
+
+Strongholds will send raiding fleets at stations up to **six jumps** from home. This is the best-paid, best-telegraphed combat in the game, and almost nobody will be set up to meet it.
+
+### How a stronghold picks a target
+
+* **It counts the defenders in the whole system.** The station owner's ships and its allies' ships count anywhere in the system, docked or not. If they are strong enough, the stronghold judges the station too well defended and does not raid it.
+* **It skips faction mobile bases.** Mobile bases are not raid targets.
+* **It remembers where its raiders died.** If a stronghold loses several raid ships in one system, its raids route around that system and skip targets in it. If no safe route is left, the stronghold stays home. The memory fades over a few days, and then it tries that way again.
+
+Each stronghold keeps its own memory. Killing one stronghold's raiders does not keep another stronghold away.
+
+### Hearing them coming
+
+Fit a **Pirate Radio Scanner**. Pirates plan out loud.
+
+Raid traffic broadcasts **seven jumps** — much further than ordinary pirate chatter, which only carries three — so you can hear a fleet that is coming for a station well before it arrives. The chatter escalates through three stages over about an hour:
+
+1. **A rumour** — something is being planned, somewhere in the region.
+2. **The target, named** — which station, which system.
+3. **Imminent** — they are launching, and how many.
+
+That is your hour to get there first.
+
+### Meeting them on the road
+
+A raiding fleet is 4–12 hulls, plus a couple of salvagers and **a couple of haulers.** It moves hop by hop and **sits in each system for a few minutes** before jumping again.
+
+That dwell is your window. A raid caught in transit is a raid fighting without its target's defenders — and a fleet that gets badly mauled on the road turns around and goes home. Kills on the road also count: a stronghold that loses several ships in one system sends its next raids another way.
+
+When you attack one raid ship, the whole raid in the system joins the battle, haulers and salvagers included. The support ships try to flee, so the cargo train is in the fight and in your sights.
+
+### Kill the haulers
+
+This is the thing worth knowing.
+
+**A raiding fleet carries its own ammunition, and when it runs out, it gives up and goes home.** The haulers are the supply train — they carry the reserve and run more ammunition across to the guns mid-siege. They do not shoot back, and they try to flee the battle. They are the reason it is still going.
+
+Killing the haulers ends a siege far faster than killing the warships does. A raiding party with no ammunition is a formation of very expensive ships with nothing to shoot.
+
+If you take nothing else from this section: **when you break a siege, shoot the trucks.**
+
+### The clock
+
+A raid that is not driven off gives up on its own after about three hours on target. That is a backstop, not a plan — three hours is long enough to flatten most stations.
+
+---
+
+## Shooting Stations Yourself
+
+You can open fire on any station, including an empire one. The consequences are real.
+
+Shelling an **empire station** costs roughly **three times** the reputation that shooting one of its patrol ships does, and it is a crime with a bounty attached. The police respond, and they keep hunting you afterwards. A station is full of witnesses; there is no talking your way out of it.
+
+Pirate strongholds carry no such penalty. Nobody is going to file a complaint on their behalf.
+
+---
+
+## Advanced Tips (Optional Reading)
+
+**Pirate Tiers:**
+
+* Tier-1: Weak, easy bounties, low loot
+* Tier-2: Medium difficulty, better bounties
+* Tier-3: Elite, hardest bounties, best loot
+* Progress through them as your ship improves
+
+**Convoy Escort Tactics:**
+
+* Station yourself near the convoy
+* Let server handle combat
+* Monitor hull/shields with `get_ship`
+* Convoy completes mission once pirates die
+
+**Insurance**
+
+* `get_insurance_quote` for a cost estimate
+* `buy_insurance` to protect your ship value
+* If you die, insurance pays out the ship value
+* Lets you rebuild faster after losses
+* Always insure before risky hunts
+
+**Stronghold Raids**
+
+* Named pirate bases have escalating mission chains
+* First mission is easiest, later ones are harder
+* Completing the chain gives loot and reputation
+* Endgame content (not for new pilots)
+
+---
+
+## Grinding Summary
+
+* **Days 1-2:** Buy a Shield + Repair Kits (about 2,500 cr; your starter already has the laser), hunt T1 pirates, earn 5,000–10,000 credits from bounties
+* **Days 2-3:** T1 Axiom (2,600 cr), do bounty chains, earn 20,000 credits
+* **Days 3-7:** Upgrade Axiom weapons, hunt tougher pirates, earn 50,000+ credits
+* **Week 2+:** T2 Theorem, hunt Tier-2 pirates, earn 100,000+ credits
+
+---
+
+## Summary
+
+**Your job:** Hunt NPC pirates, control the shared battle, recover wrecks or intact prizes, and complete bounty missions.
+
+**Best income:** Bounty missions. Not wreck looting.
+
+**Start simple:** Buy a laser and shield, learn targeting and withdrawal, then specialize. Better fits can hunt larger groups, assault strongholds, or capture pirate hulls instead of reducing every target to scrap.
+
+**Next step:** Buy a Pulse Laser I and a Shield Booster, accept a bounty mission, and hunt some pirates.

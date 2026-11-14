@@ -1,0 +1,102 @@
+[1/50] baixando https://spacemolt.com/docs/guides/fuel
+  OK (27303 chars) -> knowledge_base\raw\docs_guides_fuel.md
+[2/50] baixando https://spacemolt.com/docs/police
+  OK (16491 chars) -> knowledge_base\raw\docs_police.md
+[3/50] baixando https://spacemolt.com/docs/death
+  OK (9680 chars) -> knowledge_base\raw\docs_death.md
+[4/50] baixando https://spacemolt.com/docs/travel
+  OK (12898 chars) -> knowledge_base\raw\docs_travel.md
+[5/50] baixando https://spacemolt.com/docs/guides
+  OK (8838 chars) -> knowledge_base\raw\docs_guides.md
+[6/50] baixando https://spacemolt.com/docs
+  OK (17162 chars) -> knowledge_base\raw\docs.md
+[7/50] baixando https://spacemolt.com/docs/getting-started
+  OK (15105 chars) -> knowledge_base\raw\docs_getting-started.md
+[8/50] baixando https://spacemolt.com/docs/game-clients
+  ERRO ao buscar pagina: HTTPSConnectionPool(host='spacemolt.com', port=443): Read timed out. (read timeout=30)
+[9/50] baixando https://spacemolt.com/docs/guides/miner
+  OK (15199 chars) -> knowledge_base\raw\docs_guides_miner.md
+[10/50] baixando https://spacemolt.com/docs/guides/trader
+  OK (12187 chars) -> knowledge_base\raw\docs_guides_trader.md
+[11/50] baixando https://spacemolt.com/docs/guides/taxes
+  OK (10148 chars) -> knowledge_base\raw\docs_guides_taxes.md
+[12/50] baixando https://spacemolt.com/docs/guides/arbitrage
+  OK (11494 chars) -> knowledge_base\raw\docs_guides_arbitrage.md
+[13/50] baixando https://spacemolt.com/docs/guides/mission-runner
+  OK (10397 chars) -> knowledge_base\raw\docs_guides_mission-runner.md
+[14/50] baixando https://spacemolt.com/docs/guides/passenger-lines
+  OK (27811 chars) -> knowledge_base\raw\docs_guides_passenger-lines.md
+[15/50] baixando https://spacemolt.com/docs/guides/pirate-hunter
+  OK (18570 chars) -> knowledge_base\raw\docs_guides_pirate-hunter.md
+[16/50] baixando https://spacemolt.com/docs/guides/boarding
+  OK (17369 chars) -> knowledge_base\raw\docs_guides_boarding.md
+[17/50] baixando https://spacemolt.com/docs/guides/explorer
+  OK (11197 chars) -> knowledge_base\raw\docs_guides_explorer.md
+[18/50] baixando https://spacemolt.com/docs/guides/base-builder
+  OK (38391 chars) -> knowledge_base\raw\docs_guides_base-builder.md
+[19/50] baixando https://spacemolt.com/docs/guides/factions
+  OK (43693 chars) -> knowledge_base\raw\docs_guides_factions.md
+[20/50] baixando https://spacemolt.com/docs/guides/nomad
+  OK (21834 chars) -> knowledge_base\raw\docs_guides_nomad.md
+[21/50] baixando https://spacemolt.com/docs/guides/crafting
+  OK (14273 chars) -> knowledge_base\raw\docs_guides_crafting.md
+[22/50] baixando https://spacemolt.com/docs/guides/packages
+  OK (35013 chars) -> knowledge_base\raw\docs_guides_packages.md
+[23/50] baixando https://spacemolt.com/docs/guides/drones
+  OK (27158 chars) -> knowledge_base\raw\docs_guides_drones.md
+[24/50] baixando https://spacemolt.com/docs/guides/client-dev
+  OK (6687 chars) -> knowledge_base\raw\docs_guides_client-dev.md
+[25/50] baixando https://spacemolt.com/docs/connections
+  OK (13186 chars) -> knowledge_base\raw\docs_connections.md
+[26/50] baixando https://spacemolt.com/docs/accounts
+  OK (8353 chars) -> knowledge_base\raw\docs_accounts.md
+[27/50] baixando https://spacemolt.com/docs/social
+  OK (10148 chars) -> knowledge_base\raw\docs_social.md
+[28/50] baixando https://spacemolt.com/docs/progression
+  OK (12691 chars) -> knowledge_base\raw\docs_progression.md
+[29/50] baixando https://spacemolt.com/docs/empires
+  OK (15200 chars) -> knowledge_base\raw\docs_empires.md
+[30/50] baixando https://spacemolt.com/docs/exploration
+  OK (12764 chars) -> knowledge_base\raw\docs_exploration.md
+[31/50] baixando https://spacemolt.com/docs/wildlife
+  OK (12539 chars) -> knowledge_base\raw\docs_wildlife.md
+[32/50] baixando https://spacemolt.com/docs/mining
+  OK (11151 chars) -> knowledge_base\raw\docs_mining.md
+[33/50] baixando https://spacemolt.com/docs/crafting
+  OK (12175 chars) -> knowledge_base\raw\docs_crafting.md
+[34/50] baixando https://spacemolt.com/docs/markets
+  OK (11267 chars) -> knowledge_base\raw\docs_markets.md
+[35/50] baixando https://spacemolt.com/docs/trading
+  OK (10270 chars) -> knowledge_base\raw\docs_trading.md
+[36/50] baixando https://spacemolt.com/docs/storage
+  OK (11823 chars) -> knowledge_base\raw\docs_storage.md
+[37/50] baixando https://spacemolt.com/docs/economy
+  OK (13419 chars) -> knowledge_base\raw\docs_economy.md
+[38/50] baixando https://spacemolt.com/docs/passengers
+  OK (10621 chars) -> knowledge_base\raw\docs_passengers.md
+[39/50] baixando https://spacemolt.com/docs/combat
+  OK (20662 chars) -> knowledge_base\raw\docs_combat.md
+[40/50] baixando https://spacemolt.com/docs/wrecks
+  OK (12507 chars) -> knowledge_base\raw\docs_wrecks.md
+[41/50] baixando https://spacemolt.com/docs/scanning
+  OK (13902 chars) -> knowledge_base\raw\docs_scanning.md
+[42/50] baixando https://spacemolt.com/docs/ships
+  OK (11979 chars) -> knowledge_base\raw\docs_ships.md
+[43/50] baixando https://spacemolt.com/docs/shipyard
+  OK (11337 chars) -> knowledge_base\raw\docs_shipyard.md
+[44/50] baixando https://spacemolt.com/docs/drones
+  OK (8857 chars) -> knowledge_base\raw\docs_drones.md
+[45/50] baixando https://spacemolt.com/docs/skills
+  OK (8825 chars) -> knowledge_base\raw\docs_skills.md
+[46/50] baixando https://spacemolt.com/docs/factions
+  OK (17124 chars) -> knowledge_base\raw\docs_factions.md
+[47/50] baixando https://spacemolt.com/docs/stations
+  OK (22358 chars) -> knowledge_base\raw\docs_stations.md
+[48/50] baixando https://spacemolt.com/docs/espionage
+  OK (14063 chars) -> knowledge_base\raw\docs_espionage.md
+[49/50] baixando https://spacemolt.com/docs/hospitality
+  OK (11658 chars) -> knowledge_base\raw\docs_hospitality.md
+[50/50] baixando https://spacemolt.com/docs/missions
+  OK (12568 chars) -> knowledge_base\raw\docs_missions.md
+
+Download concluido: 49/50 paginas salvas em knowledge_base\raw
