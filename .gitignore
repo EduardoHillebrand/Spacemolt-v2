@@ -12,6 +12,9 @@ venv/
 node_modules/
 dist/
 
+# artefato gerado (spec 0004) - reconstrua com scripts/build-knowledge-index.ts
+knowledge_base/index.json
+
 # editores/SO
 .DS_Store
 Thumbs.db

@@ -7,39 +7,40 @@ Cada item é um passo pequeno e checável. Commit direto na `main` ao fechar cad
 > ainda não tiver sido implementada quando chegar a vez desta, implementar
 > `app/core/embeddings.ts` aqui mesmo (ele é parte das duas specs, não duplicar depois).
 
-1. [ ] **`app/knowledge/chunker.ts`**: quebra por seção markdown (`##`/`###`); seções
-   grandes (ex.: tabelas longas) quebram por parágrafo, teto de ~2000 caracteres por chunk.
-   Cada chunk guarda arquivo de origem + título da seção.
+1. [x] **`app/knowledge/chunker.ts`**: quebra por seção markdown, depois por parágrafo.
+   **Achado crítico no build real**: um parágrafo único (sem linha em branco, ex. lista
+   longa de uma linha) podia sozinho passar do teto e quebrar o limite de contexto do
+   modelo de embedding — corrigido com corte na força bruta por tamanho quando isso
+   acontece (`splitOversizedParagraph`). Ver nota no `plan.md`.
 
-2. [ ] **`app/knowledge/index_builder.ts`**: `build()` — varre `knowledge_base/distilled/*.md`
-   + `SKILL_MANUAL.md`, chunka, chama `embed()`, grava `knowledge_base/index.json` no
-   formato do `plan.md`.
+2. [x] **`app/knowledge/index_builder.ts`**: `build()`. Também ganhou retry (3 tentativas,
+   backoff) em falha de embedding — ~1000 chamadas sequenciais ao Ollama local esbarram em
+   erro transiente de vez em quando.
 
-3. [ ] **`scripts/build-knowledge-index.ts`**: CLI fino que só chama `index_builder.build()`.
+3. [x] **`scripts/build-knowledge-index.ts`**: CLI com barra de progresso simples.
 
-4. [ ] **`.gitignore`**: adicionar `knowledge_base/index.json`.
+4. [x] **`.gitignore`**: `knowledge_base/index.json` adicionado.
 
-5. [ ] **`app/knowledge/query.ts`**: `search(question, topK?)` e `reload()`. Carrega o
-   índice uma vez por processo.
+5. [x] **`app/knowledge/query.ts`**: `search(question, topK?)` e `reload()`. `cosineSimilarity`
+   compartilhada com a `0003` via `app/core/similarity.ts` (constituição, regra 5).
 
-6. [ ] **Teste automatizado** (fake de `embed()`, chunks pequenos de teste): `chunker`
-   quebra corretamente nos limites certos; `search` devolve ordenado por similaridade;
-   `reload()` recarrega sem reiniciar processo.
+6. [x] **Teste automatizado** (`chunker.test.ts`, `index_builder.test.ts`): 9 testes, todos
+   passando — inclui o caso do parágrafo gigante e o retry de embedding.
 
-7. [ ] **Rodar o build real** contra o `knowledge_base/` completo (50 páginas + manual) —
-   medir tempo, confirmar que termina sem erro.
+7. [x] **Build real rodado** contra os 50 arquivos distilados + `SKILL_MANUAL.md`: **1042
+   chunks, 147s** (~2.5min). Só terminou sem erro depois da correção do item 1.
 
-8. [ ] **Validação manual — relevância**: perguntar algo como "quanto custa viajar X saltos
-   com Y combustível" e confirmar que o chunk certo (fórmula de fuel, provavelmente de
-   `docs_guides_fuel.md` ou `SKILL_MANUAL.md`) aparece no topo. → critério de sucesso 1.
+8. [x] **Validação manual — relevância**: "quanto custa viajar X saltos com Y combustível"
+   trouxe `docs_guides_fuel.md > Checklist pré-voo` no top 3, em 213ms. → critério 1
+   confirmado.
 
-9. [ ] **Validação manual — atualização sem código**: editar manualmente um arquivo em
-   `knowledge_base/distilled/` (ou re-rodar o crawler), rodar o build de novo, confirmar que
-   a consulta já reflete a mudança sem tocar em nenhum código. → critério de sucesso 2.
+9. [x] **Validação manual — atualização sem código**: adicionado um marcador de teste em
+   `docs.md`, rebuild rodado, marcador apareceu na posição #3 de 1043 chunks numa busca
+   relacionada — sem tocar em nenhum código. Marcador removido depois, índice reconstruído
+   de novo. → critério 2 confirmado.
 
-10. [ ] **Validação manual — velocidade**: medir o tempo de `search()` numa pergunta típica
-    e confirmar que não é perceptivelmente mais lento que o resto do ciclo de decisão.
-    → critério de sucesso 3.
+10. [x] **Validação manual — velocidade**: 3 buscas típicas, média de **59ms** cada —
+    nada perceptível no ciclo de decisão. → critério 3 confirmado.
 
 ## Nota sobre granularidade
 

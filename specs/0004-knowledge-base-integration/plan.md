@@ -30,6 +30,13 @@ toda). Estratégia simples: quebra por seção de markdown (`##`/`###`); seçõe
 por chunk. Cada chunk guarda, junto do texto: arquivo de origem e título da seção — pra poder
 devolver a citação exata de onde veio.
 
+> **Correção feita rodando o build real**: quebrar só entre parágrafos não basta — uma
+> seção pode ter um único "parágrafo" (sem linha em branco no meio, ex. uma lista longa de
+> uma linha só) maior que o teto por si só. Isso aconteceu de fato no `SKILL_MANUAL.md`
+> (um chunk de 7666 caracteres) e quebrou o limite de contexto do `nomic-embed-text`
+> (`"the input length exceeds the context length"`). Corrigido com um corte na força bruta
+> por tamanho (`splitOversizedParagraph`) quando um parágrafo isolado excede o teto.
+
 ### `index_builder.ts` — construção do índice
 
 ```ts
@@ -37,8 +44,9 @@ function build(): Promise<void>;
 ```
 
 Varre `knowledge_base/distilled/*.md` + `knowledge_base/SKILL_MANUAL.md`, chunka cada um
-(`chunker.ts`), chama `embed()` (`app/core/embeddings.ts`) pra cada chunk, grava tudo em
-`knowledge_base/index.json`:
+(`chunker.ts`), chama `embed()` (`app/core/embeddings.ts`) pra cada chunk — com retry (3
+tentativas, backoff) porque ~1000 chamadas sequenciais ao Ollama local esbarram em erro
+transiente de vez em quando — e grava tudo em `knowledge_base/index.json`:
 
 ```json
 {
