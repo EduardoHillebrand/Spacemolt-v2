@@ -3,15 +3,17 @@
 Cada item é um passo pequeno e checável. Commit direto na `main` ao fechar cada um
 (constituição, regra 7) — branch só se algum item virar mais arriscado que o esperado.
 
-1. [ ] **Scaffold do projeto Node/TypeScript**: `package.json`, `tsconfig.json`, estrutura
+1. [x] **Scaffold do projeto Node/TypeScript**: `package.json`, `tsconfig.json`, estrutura
    `app/`, instalar `@spacemolt/lib`, lint/build mínimos.
+   > Nota: precisou trocar o Node da máquina pra v25.6.1 via `nvm use` (admin) — v21 tem bug
+   > real no WebSocket experimental com mensagens grandes, não é só o aviso de `engines`
+   > sendo conservador. Ver `log/licoes-aprendidas.md`.
 
-2. [ ] **Spike de validação da lib** (script isolado, descartável, fora de `app/`): logar em
-   **uma** conta real via `Account` da lib e imprimir (sem credenciais) o estado inicial.
-   Critério de saída: login funciona, dá pra emitir um `get_status` (query) e uma mutação
-   simples, e fica claro como um erro de comando chega até quem chamou (exceção? resultado?
-   — resolve a lacuna "(d)" que a pesquisa não confirmou). Se a lib não se comportar como o
-   `plan.md` assume, voltar e ajustar o `plan.md` antes de seguir pro item 3.
+2. [x] **Spike de validação da lib** (`scripts/spike-lib-login.ts`): logou na conta
+   `hillebot` via `Account` da lib. Confirmado: login funciona, `get_status` (query)
+   funciona, e erro de comando chega como **exceção rejeitada** (`SpacemoltError`, com
+   `.code`/`.message`/`.details`) — resolve a lacuna "(d)" que a pesquisa não confirmou.
+   Comportamento bate com o que o `plan.md` assumiu, nenhum ajuste necessário.
 
 3. [ ] `game_client.types.ts` — `CommandResult` e a interface `GameSession` do `plan.md`.
 
