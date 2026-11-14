@@ -23,8 +23,8 @@ console.log("get_status structuredContent keys:", Object.keys(status.structuredC
 
 console.log("\n--- testando erro de comando (ação impossível no estado atual) ---");
 try {
-  // undock enquanto já undocked (ou outra ação invalida) deve rejeitar com SpacemoltError
-  await account.commands.spacemolt.dock({ id: "___invalido___" });
+  // dock sem estar numa estação/POI válido deve rejeitar com SpacemoltError
+  await account.commands.spacemolt.dock();
   console.log("comando inválido NÃO rejeitou (inesperado)");
 } catch (err) {
   console.log("erro capturado, tipo:", err?.constructor?.name);

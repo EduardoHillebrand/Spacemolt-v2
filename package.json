@@ -3,11 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "description": "Autonomous SpaceMolt-playing agent. See specs/ for the SDD specs.",
   "scripts": {
     "build": "tsc --noEmit",
-    "dev": "node --experimental-websocket --import tsx app/main.ts",
-    "test": "node --experimental-websocket --test --import tsx"
+    "dev": "node --import tsx app/main.ts",
+    "test": "node --test --import tsx"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

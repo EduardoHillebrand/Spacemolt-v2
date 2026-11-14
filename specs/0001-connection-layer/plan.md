@@ -49,9 +49,17 @@ app/
 - `CommandResult` é tipo nosso:
   ```ts
   type CommandResult =
-    | { ok: true; result: string; structuredContent: unknown }
-    | { ok: false; code: string; message: string; details?: unknown };
+    | { ok: true; kind: "query"; result: unknown; structuredContent?: unknown }
+    | { ok: true; kind: "mutation"; command: string; tick: number; delta: unknown; autoDocked?: boolean; autoUndocked?: boolean }
+    | { ok: false; code: string; message: string; details?: Record<string, unknown> };
   ```
+  > **Correção feita na implementação**: o rascunho original tinha um único formato de
+  > sucesso (`result`/`structuredContent`). Na prática, `account.send()` devolve
+  > `QueryResult` (tem `result`/`structuredContent`) ou `MutationResult` (tem
+  > `command`/`tick`/`delta`) — formatos diferentes de verdade, não só nomenclatura. O
+  > formato de **erro** (a parte mais detalhada deste plano) ficou exatamente como previsto,
+  > por isso só esse trecho foi corrigido, não o documento todo.
+
   Nunca lança exceção pra quem chama (regra 6). Erros de rede/timeout/protocolo da própria
   lib são capturados em `errors.ts` e convertidos pra esse formato também.
 - `rate_limit.ts`: a lib retenta `rate_limited` em **mutações**, mas a pesquisa não confirmou

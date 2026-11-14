@@ -15,20 +15,29 @@ Cada item é um passo pequeno e checável. Commit direto na `main` ao fechar cad
    `.code`/`.message`/`.details`) — resolve a lacuna "(d)" que a pesquisa não confirmou.
    Comportamento bate com o que o `plan.md` assumiu, nenhum ajuste necessário.
 
-3. [ ] `game_client.types.ts` — `CommandResult` e a interface `GameSession` do `plan.md`.
+3. [x] `game_client.types.ts` — `CommandResult` e a interface `GameSession` do `plan.md`.
+   > Ajuste descoberto na implementação: sucesso de **mutação** e de **query** têm formatos
+   > diferentes na lib (`MutationResult` tem `.command`/`.tick`/`.delta`; `QueryResult` tem
+   > `.result`/`.structuredContent`) — `CommandResult.ok:true` virou uma união discriminada
+   > por `kind: "query" | "mutation"` em vez de um formato único. `plan.md` não foi reescrito
+   > porque o formato de erro (a parte que ele detalhava) ficou exatamente como previsto.
 
-4. [ ] `errors.ts` — normaliza qualquer erro (jogo, lib, rede) pro formato `CommandResult`;
-   nenhuma exceção escapa pra quem chama (constituição, regra 6).
+4. [x] `errors.ts` — normaliza `SpacemoltError`/`HttpError`/`ConnectionClosedError`/erro
+   genérico pro formato `CommandResult`; nenhuma exceção escapa.
 
-5. [ ] `game_client.ts` — `connect(accountName)`: lê `accounts/<accountName>/credentials.json`,
-   autentica via lib (`account.login(username, password)`), expõe `call()`, `on()` e
-   `initialState`. Único arquivo que importa `@spacemolt/lib` e `fs` pra credenciais.
+5. [x] `game_client.ts` — `connect(accountName)`: lê credenciais, autentica via
+   `account.login()`, expõe `call()` (usa o `account.send(tool, action, payload)` da lib —
+   achado do spike: é o método genérico em que os comandos tipados são construídos),
+   `getState()`, `initialState` e `on()`.
 
-6. [ ] `rate_limit.ts` — embrulha `GameSession.call` com retry exponencial (base 1s, até 5
-   tentativas, respeita `details.retry_after` quando vier no erro).
+6. [x] `rate_limit.ts` — retry exponencial (base 1s, até 5 tentativas), respeita
+   `details.retry_after` (segundos) ou `details.retryAfterMs`.
 
-7. [ ] **Teste automatizado com fake da lib** (sem rede): confirma que `game_client.ts`
-   normaliza erro corretamente e que `rate_limit.ts` retenta como esperado.
+7. [x] **Teste automatizado** (`errors.test.ts`, `rate_limit.test.ts`, sem rede): 10 testes,
+   todos passando — normalização de cada classe de erro da lib + retry/backoff de
+   `rate_limit.ts` em várias situações (sucesso direto, erro não-rate-limit, recuperação
+   após N tentativas, esgotamento, HTTP 429). `engines.node: ">=22"` documentado no
+   `package.json`.
 
 8. [ ] **Validação manual — isolamento**: conectar as 3 contas (`hillebot`, `ironvex`,
    `medici`) e confirmar que cada uma recebe seu próprio estado inicial, sem se misturar.
