@@ -16,4 +16,5 @@ node_modules/
 Thumbs.db
 scripts/*.log
 
-CAPTAINS_LOG.md
+# log de continuidade da sessão, local, nunca versionado
+log/
