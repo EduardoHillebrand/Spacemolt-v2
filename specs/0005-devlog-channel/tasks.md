@@ -3,38 +3,38 @@
 Cada item é um passo pequeno e checável. Commit direto na `main` ao fechar cada um
 (constituição, regra 7).
 
-1. [ ] **`app/devlog/event.ts`**: tipo `DevlogEvent` e `scrub()`, cobrindo campo sensível em
-   qualquer profundidade (objeto aninhado, array de objetos).
+1. [x] **`app/devlog/event.ts`**: `DevlogEvent` e `scrub()`, cobrindo campo sensível em
+   qualquer profundidade.
 
-2. [ ] **`app/devlog/server.ts`**: servidor WebSocket na porta `7788`, fan-out simétrico
-   entre clientes conectados, validação mínima do envelope (descarta evento malformado sem
-   propagar).
+2. [x] **`app/devlog/server.ts`**: servidor WebSocket (pacote `ws` — Node não tem
+   implementação server-side nativa, só client-side) na porta `7788`, fan-out simétrico,
+   evento malformado descartado sem propagar.
 
-3. [ ] **`app/devlog/client.ts`**: `emit()` — preenche `account`/`timestamp`
-   automaticamente, aplica `scrub()`, reconecta em segundo plano com backoff de até 30s,
-   nunca bloqueia nem lança exceção pra quem chama (nem quando o servidor nunca existiu).
+3. [x] **`app/devlog/client.ts`**: `emit()` — usa o `WebSocket` nativo do Node (client-side)
+   pra conectar no `server.ts`. Nunca lança nem bloqueia.
 
-4. [ ] **`scripts/devlog-tail.ts`**: CLI que conecta no `server.ts` e imprime eventos
-   recebidos, com filtro opcional `--account <nome>`.
+4. [x] **`scripts/devlog-tail.ts`**: CLI com filtro `--account`.
 
-5. [ ] **Teste automatizado**: `scrub()` redige campo sensível em profundidade; `emit()` não
-   lança nem bloqueia mesmo com o servidor fora (mock de conexão falha); `server.ts`
-   descarta evento malformado sem repassar.
+5. [x] **Teste automatizado** (`event.test.ts`, `devlog.test.ts`): 9 testes — `scrub` em
+   profundidade, `emit()` sem servidor, fan-out real (servidor+clientes de teste em porta
+   separada), evento malformado descartado.
 
-6. [ ] **Entrada no PM2** pro `server.ts` — processo próprio, sempre ligado, separado dos
-   processos por conta.
+6. [x] **`ecosystem.config.cjs`** criado com entrada `devlog-server` (processo único,
+   `instances: 1`). **Não validado rodando de verdade**: o PM2 não está instalado nesta
+   máquina, apesar do `log/infra.md` dizer que está — discrepância registrada em
+   `log/licoes-aprendidas.md`. O entrypoint (`scripts/run-devlog-server.ts`) foi testado
+   rodando direto com `node`, funciona.
 
-7. [ ] **Validação manual — fan-out**: subir `server.ts` + dois emissores simulando duas
-   contas diferentes, abrir `devlog-tail.ts` e confirmar que os eventos de ambas chegam,
-   cada um identificado pela conta de origem. → critério de sucesso 1 da `spec.md`.
+7. [x] **Validação manual — fan-out** (`scripts/validate-devlog.ts`): servidor real +
+   `devlog-tail.ts` real como processo separado + duas contas emitindo — ambas chegaram,
+   identificadas corretamente. → critério de sucesso 1 confirmado.
 
-8. [ ] **Validação manual — resiliência**: desligar o `devlog-tail.ts` (ninguém ouvindo) e
-   confirmar que os emissores continuam rodando sem erro nem lentidão perceptível.
-   → critério de sucesso 2.
+8. [x] **Validação manual — resiliência**: `devlog-tail.ts` morto no meio, `emit()` das
+   duas contas continuou sem lançar erro. → critério de sucesso 2 confirmado.
 
-9. [ ] **Validação manual — segredo nunca passa**: emitir deliberadamente um evento com um
-   campo tipo `password` no payload e confirmar, no `devlog-tail.ts`, que chega redigido.
-   → critério de sucesso 3.
+9. [x] **Validação manual — segredo nunca passa**: evento com `password` no payload chegou
+   no `devlog-tail.ts` com o campo como `[REDACTED]`, nunca em texto puro.
+   → critério de sucesso 3 confirmado.
 
 ## Nota sobre granularidade
 
