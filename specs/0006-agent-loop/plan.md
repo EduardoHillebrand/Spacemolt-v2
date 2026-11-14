@@ -123,6 +123,21 @@ async function runAccountLoop(accountName: string): Promise<never> {
 }
 ```
 
+> **Correção feita na implementação**: o pseudocódigo acima assumia que `planner`/`executor`
+> de uma skill sempre devolvem um `ExecutorResult` estruturado, nunca lançam. Uma skill com
+> bug real (não um erro do jogo) poderia lançar uma exceção de verdade e derrubar o loop —
+> o que violaria o requisito 5 da spec. A implementação extrai o corpo do `switch` numa
+> função `advance(state, skill, ctx, devlog)` isolada, com `try/catch` em volta das duas
+> chamadas: qualquer exceção é tratada exatamente como `{status:"error", code:
+> "skill_threw"}`. Isso também tornou o loop testável sem rede — `advance()` não faz
+> `connect()` nem `sleep()`, só o `runAccountLoop` (não-testável diretamente, nunca
+> retorna) faz isso por fora.
+>
+> **Segunda correção**: o `while (true)` sem nenhum yield na iteração "running" pode travar
+> o event loop numa fila de microtasks se o executor de uma skill resolver quase
+> instantaneamente — nem o próprio devlog (que depende de I/O assíncrono) conseguiria
+> rodar. Adicionado um `await setImmediate(...)` por iteração que não entrou em backoff.
+
 - **Nunca mais de um plano ativo**: a variável `plan` é única por conta, atualizada
   estritamente de forma sequencial dentro do `while` — satisfaz o requisito 2 diretamente
   pela estrutura do código, não por um lock explícito.
