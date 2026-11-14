@@ -1,0 +1,20 @@
+{
+  "name": "spacemolt-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Autonomous SpaceMolt-playing agent. See specs/ for the SDD specs.",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "dev": "node --experimental-websocket --import tsx app/main.ts",
+    "test": "node --experimental-websocket --test --import tsx"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@spacemolt/lib": "^18.0.1"
+  }
+}
