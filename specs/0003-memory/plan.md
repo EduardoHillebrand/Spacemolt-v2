@@ -11,9 +11,14 @@ descartadas".
 
 ```
 app/
+  core/
+    embeddings.ts           # único lugar que chama o Ollama pra gerar embedding de um texto
+                             # (compartilhado com a spec 0004-knowledge-base-integration,
+                             # que também precisa de embedding — por isso mora em core/,
+                             # não em memory/; constituição regra 5: "se duas coisas
+                             # precisam do mesmo, sobe pra core/")
   memory/
     operational_state.ts   # formaliza a regra: estado vem do GameSession, nunca é persistido como fonte de verdade
-    embeddings.ts           # único lugar que chama o Ollama pra gerar embedding de um texto
     long_term_memory.ts      # remember() / recall() / list()
 accounts/<conta>/
   memory.json               # memória de longo prazo da conta — gitignorado (dentro de accounts/)
@@ -36,7 +41,7 @@ Este arquivo expõe um helper `snapshot(session)` (devolve um objeto plano do es
 útil pra log/dashboard depois) e documenta no código: **nada aqui é gravado em disco como
 fonte de verdade** — se precisar, é só reconectar e reconstruir.
 
-### `embeddings.ts`
+### `app/core/embeddings.ts`
 
 ```ts
 function embed(text: string): Promise<number[]>;

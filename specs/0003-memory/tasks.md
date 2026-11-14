@@ -7,7 +7,9 @@ Cada item é um passo pequeno e checável. Commit direto na `main` ao fechar cad
    descartável que chama `POST /api/embeddings` com `nomic-embed-text` e confirma formato
    da resposta, dimensão do vetor e tempo de resposta — antes de depender disso no resto.
 
-2. [ ] **`app/memory/embeddings.ts`**: `embed(text)`, usando o formato confirmado no spike.
+2. [ ] **`app/core/embeddings.ts`**: `embed(text)`, usando o formato confirmado no spike.
+   Local em `core/`, não em `memory/`, porque a spec `0004-knowledge-base-integration`
+   também vai precisar dele.
    Erro claro (constituição, regra 6) se o Ollama estiver indisponível — nunca lança
    exceção não tratada pra quem chama.
 
