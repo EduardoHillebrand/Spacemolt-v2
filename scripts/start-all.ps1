@@ -35,13 +35,12 @@ Start-Sleep -Seconds 3
 # Página de diretriz + feed ao vivo (precisa do .env com DIRECTIVES_USER/DIRECTIVES_PASS).
 Start-Managed -Name "directives-server" -NodeArgs @("--env-file=.env", "--import", "tsx", "scripts/run-directives-server.ts")
 
-# Loop de cada conta (spec 0006) -- COMENTADO de propósito: nenhuma skill (0007-0011)
-# passou por validação manual contra o jogo real ainda (specs/0007-skill-mining/tasks.md
-# em diante). Descomente conta por conta só depois de validar, ou troque pra todas de uma
-# vez com conhecimento do risco (ações reais no jogo, sem supervisão, reiniciando sozinho a
-# cada boot).
-# Start-Managed -Name "hillebot" -NodeArgs @("--import", "tsx", "app/main.ts", "hillebot")
-# Start-Managed -Name "ironvex"  -NodeArgs @("--import", "tsx", "app/main.ts", "ironvex")
-# Start-Managed -Name "medici"   -NodeArgs @("--import", "tsx", "app/main.ts", "medici")
+# Loop de cada conta (spec 0006). Habilitado em 2026-11-15 a pedido do usuário, mesmo sem
+# nenhuma skill (0007-0011) ter passado por validação manual contra o jogo real ainda
+# (specs/0007-skill-mining/tasks.md em diante) -- ações reais no jogo, sem supervisão,
+# reiniciando sozinho a cada boot. Ver log/decisoes.md.
+Start-Managed -Name "hillebot" -NodeArgs @("--import", "tsx", "app/main.ts", "hillebot")
+Start-Managed -Name "ironvex"  -NodeArgs @("--import", "tsx", "app/main.ts", "ironvex")
+Start-Managed -Name "medici"   -NodeArgs @("--import", "tsx", "app/main.ts", "medici")
 
 Write-Host "Tudo que está habilitado foi iniciado."
