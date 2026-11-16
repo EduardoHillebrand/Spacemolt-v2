@@ -91,8 +91,11 @@ async function ensureFuel(requiredFuel: number, ctx: SkillContext): Promise<Fuel
     return { status: "blocked", result: { status: "blocked", code: "unexpected_response", message: "get_ship devolveu uma mutação, não uma query" } };
   }
 
-  const ship = shipResult.result as { fuel?: number };
-  const currentFuel = ship.fuel ?? 0;
+  // Nome exato do campo não está 100% confirmado — find_route devolve `fuel_available`
+  // pro tanque atual (docs_guides_fuel.md), get_ship pode usar o mesmo nome ou só `fuel`;
+  // aceita os dois em vez de apostar num só (validação manual, task 7, confirma de verdade).
+  const ship = shipResult.result as { fuel?: number; fuel_available?: number };
+  const currentFuel = ship.fuel ?? ship.fuel_available ?? 0;
   if (currentFuel >= requiredFuel) return { status: "ok" };
 
   const refuelResult = await ctx.session.call("spacemolt", "refuel", {});

@@ -1,11 +1,12 @@
 // Traduz nomes de skill da role ativa (spec 0002) pros objetos Skill de verdade (spec
-// 0006). Mapa fixo, cresce conforme as specs 0007+ forem implementadas — hoje está vazio
-// de propósito, nenhuma skill existe ainda.
+// 0006). Mapa fixo, cresce conforme as specs 0007+ forem implementadas.
+import { miningSkill } from "../skills/mining/index.js";
 import type { SkillName } from "../roles/catalog.js";
 import type { Skill } from "./skill_interface.js";
 
 const REGISTRY: Partial<Record<SkillName, Skill>> = {
-  // mining, trading, navigation, maintenance, crafting -- adicionadas pelas specs 0007+.
+  mining: miningSkill,
+  // trading (0008), crafting (0011) -- adicionadas pelas specs seguintes.
 };
 
 export function resolve(skillNames: SkillName[]): Skill[] {
