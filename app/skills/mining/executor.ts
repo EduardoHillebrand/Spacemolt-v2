@@ -2,6 +2,7 @@
 // mecanicamente, chamando o jogo de verdade (constituição, regra 2) — nunca decide trocar
 // de atividade por conta própria; invalida e devolve controle ao planner quando o jogo
 // reporta algo que a atividade atual não resolve sozinha.
+import { sellAllCargo } from "../../core/cargo.js";
 import { checkAndRepair, checkInsurance } from "../../core/maintenance.js";
 import { goTo } from "../../core/navigation.js";
 import type { CommandResult, NavigationResult } from "../../game_client.types.js";
@@ -63,25 +64,6 @@ async function runStationStop(ctx: SkillContext): Promise<ExecutorResult> {
   if (!undockResult.ok) return { status: "error", code: undockResult.code, message: undockResult.message };
 
   return { status: "done" };
-}
-
-type SellOutcome = { ok: true } | { ok: false; code: string; message: string };
-
-async function sellAllCargo(ctx: SkillContext): Promise<SellOutcome> {
-  const cargoResult = await ctx.session.call("spacemolt", "get_cargo", {});
-  if (!cargoResult.ok) return { ok: false, code: cargoResult.code, message: cargoResult.message };
-  if (cargoResult.kind !== "query") {
-    return { ok: false, code: "unexpected_response", message: "get_cargo devolveu uma mutação, não uma query" };
-  }
-
-  // Nome exato do campo não confirmado (ver specs/0007-skill-mining/tasks.md) — melhor
-  // esforço a partir do padrão já visto noutras respostas (`items: [{id, quantity}]`).
-  const cargo = cargoResult.result as { items?: Array<{ id: string; quantity: number }> };
-  for (const item of cargo.items ?? []) {
-    const sellResult = await ctx.session.call("spacemolt", "sell", { id: item.id, quantity: item.quantity });
-    if (!sellResult.ok) return { ok: false, code: sellResult.code, message: sellResult.message };
-  }
-  return { ok: true };
 }
 
 function toExecutorResult(nav: NavigationResult): ExecutorResult {
