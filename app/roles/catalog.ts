@@ -7,7 +7,7 @@ export type Role = "miner" | "trader" | "artisan";
 // escrevê-las mostrou que são módulos compartilhados em app/core/, chamados de dentro de
 // mining/trading/crafting, não skills que competem no loop (ver
 // specs/0002-accounts-and-roles/tasks.md, "Revisão pendente", e specs/0007-skill-mining/
-// plan.md). "artisan" fica com lista vazia até 0011-skill-crafting existir como código.
+// plan.md).
 export type SkillName = "mining" | "trading" | "crafting";
 
 export interface RoleDefinition {
@@ -29,8 +29,10 @@ export const CATALOG: Record<Role, RoleDefinition> = {
       "growing capital and trade routes over time.",
   },
   artisan: {
-    skills: [],
-    objective: "Craft goods from raw materials supplied by the fleet's miner, once a crafting skill exists.",
+    skills: ["crafting"],
+    objective:
+      "Craft goods from materials already in a facility's storage, supplied by the fleet's " +
+      "miner or bought on the market (0013-inter-account-coordination still unspecified).",
   },
 };
 
