@@ -10,6 +10,8 @@
   "scripts": {
     "build": "tsc --noEmit",
     "dev": "node --import tsx app/main.ts",
+    "devlog-server": "node --import tsx scripts/run-devlog-server.ts",
+    "directives-server": "node --env-file=.env --import tsx scripts/run-directives-server.ts",
     "test": "node --test --import tsx"
   },
   "devDependencies": {

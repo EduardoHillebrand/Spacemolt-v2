@@ -15,5 +15,15 @@ module.exports = {
       // guarda estado de jogo de ninguém), nunca um processo por conta.
       instances: 1,
     },
+    {
+      // Spec 0012-operator-directives. Também processo único e compartilhado — serve
+      // a página de todas as contas, não é "por conta" (regra 4).
+      name: "directives-server",
+      script: "scripts/run-directives-server.ts",
+      interpreter: "node",
+      interpreter_args: "--import tsx --env-file=.env",
+      autorestart: true,
+      instances: 1,
+    },
   ],
 };
