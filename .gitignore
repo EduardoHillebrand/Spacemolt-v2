@@ -22,3 +22,6 @@ scripts/*.log
 
 # log de continuidade da sessão, local, nunca versionado
 log/
+
+# stdout/stderr dos processos subidos por scripts/start-all.ps1 (Task Scheduler)
+run-logs/
