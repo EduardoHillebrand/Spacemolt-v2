@@ -6,23 +6,32 @@ Cada item é um passo pequeno e checável. Commit direto na `main` ao fechar cad
 > **Dependência**: nenhuma, igual a `0009` — pode ser implementado isoladamente com um
 > `GameSession` fake.
 
-1. [ ] **`app/game_client.types.ts`**: adicionar `RepairResult` e `InsuranceResult`.
+1. [x] **`app/game_client.types.ts`**: adicionar `RepairResult` e `InsuranceResult`.
 
-2. [ ] **`app/core/maintenance.ts`**: `checkAndRepair(ctx, opts?)` — leitura do casco,
-   comparação com `DEFAULT_REPAIR_THRESHOLD_PERCENT`, escolha automática de método
-   (crédito se docada, repair kit se no espaço), variante `target: "fleet"` gratuita.
+2. [x] **`app/core/maintenance.ts`**: `checkAndRepair(ctx, opts?)` — leitura do casco
+   (`get_ship`, tool `spacemolt`), comparação com `DEFAULT_REPAIR_THRESHOLD_PERCENT`,
+   escolha automática de método (crédito se docada, repair kit se no espaço).
+   **Correção na implementação**: a variante gratuita `repair target=fleet` citada na
+   pesquisa inicial não apareceu na leitura linha-a-linha do `SKILL_MANUAL.md` — `repair`
+   lá é `repair(id?, quantity?, target?)` sob o tool `spacemolt`, sem menção a um modo
+   "fleet" sem custo. Trocado por uma leitura simples via `get_ship` (query, sem custo, já
+   confirmada) pra decidir se vale reparar, sem depender de um comportamento não confirmado.
 
-3. [ ] **`checkInsurance(ctx, opts?)`** no mesmo arquivo — lê apólice, compra só se
-   `autobuy: true`.
+3. [x] **`checkInsurance(ctx, opts?)`** no mesmo arquivo — **nomes de ação corrigidos na
+   implementação**: o manual real usa `spacemolt_salvage.policies()` (não `view_insurance`)
+   e `spacemolt_salvage.insure()` (não `buy_insurance`), como o `plan.md` original supôs
+   antes de checar o manual linha a linha. Compra só se `autobuy: true`.
 
-4. [ ] **Mapeamento de erro pra `RepairResult`/`InsuranceResult`**: qualquer coisa não
-   reconhecida cai em `blocked` com `code: "unknown_repair_error"`/`"unknown_insurance_error"`,
-   nunca lança exceção (constituição, regra 6).
+4. [x] **Mapeamento de erro pra `RepairResult`/`InsuranceResult`**: qualquer `ok: false`
+   do jogo vira `{status: "blocked", code, message}` repassando o código real — nunca lança
+   exceção (constituição, regra 6).
 
-5. [ ] **Teste automatizado** (sem rede, `GameSession` fake): casco acima do limiar não
-   repara; casco abaixo repara via crédito quando docada; repara via kit quando no espaço;
-   `target: "fleet"` nunca chama o comando de reparo pago; `autobuy: false` nunca compra
-   seguro; erro desconhecido nunca lança.
+5. [x] **Teste automatizado** (sem rede, `GameSession` fake): 8 testes em
+   `app/core/maintenance.test.ts` — casco acima do limiar não repara; casco abaixo repara
+   via crédito quando docada; repara via kit quando no espaço; limiar customizado via opção
+   é respeitado; sem crédito/kit devolve `blocked`; `checkInsurance` confirma apólice válida
+   sem comprar; sem apólice e `autobuy` desligado (default) não compra; `autobuy: true`
+   compra quando necessário.
 
 6. [ ] **Validação manual — reparo real docado**: forçar (ou aguardar) casco abaixo do
    limiar numa conta real, confirmar reparo via crédito e casco subindo em `get_ship`.

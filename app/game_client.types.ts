@@ -27,3 +27,23 @@ export interface GameSession {
   call(tool: string, action: string, payload?: Record<string, unknown>): Promise<CommandResult>;
   on(eventType: string, handler: (payload: unknown) => void): () => void;
 }
+
+// Tipos da spec 0009-skill-navigation (módulo app/core/navigation.ts).
+export type Destination =
+  | { kind: "poi"; poiId: string }
+  | { kind: "system"; systemId: string; poiId?: string };
+
+export type NavigationResult =
+  | { status: "arrived" }
+  | { status: "blocked"; code: string; message: string; retryAfterSeconds?: number };
+
+// Tipos da spec 0010-skill-maintenance (módulo app/core/maintenance.ts).
+export type RepairResult =
+  | { status: "repaired"; method: "credits" | "repair_kit" }
+  | { status: "not_needed" }
+  | { status: "blocked"; code: string; message: string };
+
+export type InsuranceResult =
+  | { status: "valid" }
+  | { status: "purchased" }
+  | { status: "blocked"; code: string; message: string };
