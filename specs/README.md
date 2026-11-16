@@ -48,16 +48,20 @@ Repositório: `https://github.com/EduardoHillebrand/Spacemolt-v2.git`.
 | 0008 | `skill-trading` | ✅ especificado | Skill real (Planner/Executor). Arbitragem dentro do Solarian; usa memória de longo prazo (`0003`) como catálogo de rotas conhecidas |
 | 0009 | `skill-navigation` | ✅ especificado | **Não é skill registrada no loop** — módulo compartilhado em `app/core/` (`goTo`), consumido por `0007`/`0008`/`0011`. Ver nota de arquitetura no `spec.md` |
 | 0010 | `skill-maintenance` | ✅ especificado | **Não é skill registrada no loop** — módulo compartilhado em `app/core/` (`checkAndRepair`/`checkInsurance`), consumido na mesma parada que `0007`/`0008`/`0011` já fariam |
-| 0011 | `skill-crafting` | ✅ especificado | Skill real (Planner/Executor), papel futuro do artesão. Assume material já no storage da instalação — aquisição é escopo de `0013` |
-| 0012 | `dashboard-ui` | 📋 a especificar | UI mobile via `spacemolt.hillebrand.ia.br`, só consome o canal de devlog (`0005`) — não o define |
-| 0013 | `inter-account-coordination` | 📋 a especificar (futuro) | Transferência explícita de bens/créditos entre contas |
+| 0011 | `skill-crafting` | ✅ especificado | Skill real (Planner/Executor), papel futuro do artesão. Assume material já no storage da instalação — aquisição é escopo de `0014` |
+| 0012 | `operator-directives` | ✅ especificado | Diretriz por conta (preferência estruturada + nota livre + pausa), editável por uma página web, sem editar código nem reiniciar o processo |
+| 0013 | `dashboard-ui` | 📋 a especificar | UI mobile via `spacemolt.hillebrand.ia.br`, só consome o canal de devlog (`0005`) — não o define. Renumerada de `0012` quando `operator-directives` entrou no backlog |
+| 0014 | `inter-account-coordination` | 📋 a especificar (futuro) | Transferência explícita de bens/créditos entre contas. Renumerada de `0013` |
 
 > Esta tabela é o estado do levantamento, não specs prontas. Cada linha só muda pra
 > "✅ especificado" quando a pasta `NNNN-nome/spec.md` de fato existir e estiver completa.
 >
-> `0010-dashboard` virou `0012-dashboard-ui` + o canal em si saiu como `0005-devlog-channel`
+> `0010-dashboard` virou `0013-dashboard-ui` + o canal em si saiu como `0005-devlog-channel`
 > — a constituição (regra 10) exige que toda feature já emita evento desde o início, então o
-> canal não podia ficar pra uma feature tardia só de UI.
+> canal não podia ficar pra uma feature tardia só de UI. `0012-operator-directives` entrou
+> no meio do backlog em 2026-11-15 (pedido do usuário, inspirado num mecanismo equivalente
+> do projeto antigo — ver `log/decisoes.md`), empurrando `dashboard-ui` e
+> `inter-account-coordination` um número cada.
 
 ## Ordem de leitura recomendada
 
@@ -66,9 +70,12 @@ Repositório: `https://github.com/EduardoHillebrand/Spacemolt-v2.git`.
 3. `0002-accounts-and-roles/`
 4. `0003-memory/`
 5. `0004-knowledge-base-integration/`
-6. `0005-devlog-channel/` e `0006-agent-loop/` — ainda não especificadas, mas vêm antes das
-   skills arquiteturalmente: toda feature emite evento desde o início (regra 10), e o loop é
-   quem decide qual skill rodar.
-7. Daí em diante pela ordem da tabela — mas a ordem de **construção** real (`tasks.md`) pode
+6. `0005-devlog-channel/` e `0006-agent-loop/` — vêm antes das skills arquiteturalmente:
+   toda feature emite evento desde o início (regra 10), e o loop é quem decide qual skill
+   rodar.
+7. `0009-skill-navigation/` e `0010-skill-maintenance/` antes de `0007`/`0008`/`0011` — são
+   módulos compartilhados que as três skills reais consomem, não skills do loop.
+8. Daí em diante pela ordem da tabela — mas a ordem de **construção** real (`tasks.md`) pode
    intercalar features, como aconteceu no projeto anterior (o devlog foi criado como 0003
-   lá, mas construído antes da mineração 0002).
+   lá, mas construído antes da mineração 0002), e como aconteceu aqui também (`0009`/`0010`
+   implementadas antes de `0007`/`0008`, por serem dependência de ambas).
