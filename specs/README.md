@@ -50,7 +50,7 @@ Repositório: `https://github.com/EduardoHillebrand/Spacemolt-v2.git`.
 | 0010 | `skill-maintenance` | ✅ especificado | **Não é skill registrada no loop** — módulo compartilhado em `app/core/` (`checkAndRepair`/`checkInsurance`), consumido na mesma parada que `0007`/`0008`/`0011` já fariam |
 | 0011 | `skill-crafting` | ✅ especificado | Skill real (Planner/Executor), papel futuro do artesão. Assume material já no storage da instalação — aquisição é escopo de `0014` |
 | 0012 | `operator-directives` | ✅ especificado | Diretriz por conta (preferência estruturada + nota livre + pausa), editável por uma página web, sem editar código nem reiniciar o processo |
-| 0013 | `dashboard-ui` | 📋 a especificar | UI mobile via `spacemolt.hillebrand.ia.br`, só consome o canal de devlog (`0005`) — não o define. Renumerada de `0012` quando `operator-directives` entrou no backlog |
+| 0013 | `dashboard-ui` | 📋 a especificar | Histórico/métricas/filtro além do feed cru ao vivo — o feed básico (sem histórico, sem filtro) já saiu como parte de `0012` (pedido do usuário depois de ver a página publicada). Renumerada de `0012` quando `operator-directives` entrou no backlog |
 | 0014 | `inter-account-coordination` | 📋 a especificar (futuro) | Transferência explícita de bens/créditos entre contas. Renumerada de `0013` |
 
 > Esta tabela é o estado do levantamento, não specs prontas. Cada linha só muda pra

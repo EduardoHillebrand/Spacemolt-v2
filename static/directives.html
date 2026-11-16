@@ -26,6 +26,10 @@
   }
   h1 { font-size: 18px; margin: 0 0 4px; }
   p.subtitle { color: var(--text-dim); margin: 0 0 20px; font-size: 13px; }
+  .layout { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; align-items: start; }
+  @media (max-width: 760px) {
+    .layout { grid-template-columns: 1fr; }
+  }
   .panel {
     background: var(--panel);
     border: 1px solid var(--border);
@@ -45,8 +49,6 @@
     margin-bottom: 14px;
   }
   textarea { min-height: 90px; resize: vertical; }
-  .row { display: flex; gap: 10px; flex-wrap: wrap; }
-  .row > div { flex: 1; min-width: 160px; }
   button {
     background: var(--accent);
     color: #06140e;
@@ -58,6 +60,7 @@
     cursor: pointer;
   }
   button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  button.link { background: transparent; border: none; color: var(--accent); padding: 0; font-weight: 400; text-decoration: underline; }
   .checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
   .checkbox-row input { width: auto; margin: 0; }
   #status { font-size: 13px; margin-top: 10px; min-height: 18px; }
@@ -74,47 +77,87 @@
   }
   .account-list button.active { border-color: var(--accent); color: var(--accent); }
   .hidden { display: none; }
+  .login-compact { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text-dim); }
+  #feed-panel {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 32px);
+  }
+  #feed {
+    flex: 1;
+    overflow-y: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+  }
+  .feed-row { padding: 5px 0; border-bottom: 1px solid var(--border); }
+  .feed-head { color: var(--text-dim); }
+  .feed-head.info { color: var(--text-dim); }
+  .feed-head.warning { color: var(--warn); }
+  .feed-head.error { color: var(--danger); }
+  .feed-payload { color: var(--text-dim); white-space: pre-wrap; font-size: 11px; margin-top: 2px; }
+  #feed-connection { font-size: 11px; color: var(--text-dim); margin-bottom: 8px; }
 </style>
 </head>
 <body>
   <h1>SpaceMolt — Diretrizes do operador</h1>
-  <p class="subtitle">Ajuste fino por conta — preferência estruturada, nota livre e pausa. Efeito no próximo ciclo, sem reiniciar nada (spec 0012).</p>
+  <p class="subtitle">Ajuste fino por conta à esquerda; o que cada conta está fazendo agora, à direita (spec 0012).</p>
 
-  <div class="panel">
-    <label for="auth-user">Usuário</label>
-    <input type="text" id="auth-user" autocomplete="username" />
-    <label for="auth-pass">Senha</label>
-    <input type="password" id="auth-pass" autocomplete="current-password" />
-    <button id="login-btn">Entrar</button>
-    <div id="auth-status" style="font-size:12px;color:var(--text-dim);margin-top:8px"></div>
-  </div>
+  <div class="layout">
+    <div id="left-col">
+      <div class="panel" id="login-panel">
+        <label for="auth-user">Usuário</label>
+        <input type="text" id="auth-user" autocomplete="username" />
+        <label for="auth-pass">Senha</label>
+        <input type="password" id="auth-pass" autocomplete="current-password" />
+        <button id="login-btn">Entrar</button>
+        <div id="auth-status" style="font-size:12px;color:var(--text-dim);margin-top:8px"></div>
+      </div>
 
-  <div class="panel">
-    <label>Contas</label>
-    <div class="account-list" id="account-list">Carregando…</div>
-  </div>
+      <div class="panel hidden" id="login-compact-panel">
+        <div class="login-compact">
+          <span id="login-compact-text"></span>
+          <button class="link" id="switch-login-btn" type="button">trocar</button>
+        </div>
+      </div>
 
-  <div class="panel hidden" id="directive-panel">
-    <h2 id="directive-title" style="font-size:15px;margin-top:0"></h2>
+      <div class="panel">
+        <label>Contas</label>
+        <div class="account-list" id="account-list">Carregando…</div>
+      </div>
 
-    <div class="checkbox-row">
-      <input type="checkbox" id="paused" />
-      <label for="paused" style="margin:0">Pausada (a conta para de agir até desmarcar)</label>
+      <div class="panel hidden" id="directive-panel">
+        <h2 id="directive-title" style="font-size:15px;margin-top:0"></h2>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="paused" />
+          <label for="paused" style="margin:0">Pausada (a conta para de agir até desmarcar)</label>
+        </div>
+
+        <label for="preferred-resource">Recurso preferido na mineração (ex.: iron) — vazio = sem preferência</label>
+        <input type="text" id="preferred-resource" placeholder="iron" />
+
+        <label for="note">Nota livre (repassada ao Decider quando ele já for consultado por alguma skill)</label>
+        <textarea id="note" placeholder="Ex.: foco em acumular crédito pra trocar de nave"></textarea>
+
+        <button id="save-btn">Salvar diretriz</button>
+        <button class="secondary" id="reload-btn" type="button">Recarregar</button>
+        <div id="status"></div>
+      </div>
     </div>
 
-    <label for="preferred-resource">Recurso preferido na mineração (ex.: iron) — vazio = sem preferência</label>
-    <input type="text" id="preferred-resource" placeholder="iron" />
-
-    <label for="note">Nota livre (repassada ao Decider quando ele já for consultado por alguma skill)</label>
-    <textarea id="note" placeholder="Ex.: foco em acumular crédito pra trocar de nave"></textarea>
-
-    <button id="save-btn">Salvar diretriz</button>
-    <button class="secondary" id="reload-btn" type="button">Recarregar</button>
-    <div id="status"></div>
+    <div id="right-col">
+      <div class="panel" id="feed-panel">
+        <h2 style="font-size:15px;margin:0 0 6px">Ao vivo</h2>
+        <div id="feed-connection">Entre com usuário/senha pra conectar.</div>
+        <div id="feed"></div>
+      </div>
+    </div>
   </div>
 
   <script>
-    const state = { user: "", pass: "", accounts: [], selected: null };
+    const state = { user: "", pass: "", accounts: [], selected: null, authenticated: false };
+    const MAX_FEED_ROWS = 300;
+    let liveSocket = null;
 
     function authHeader() {
       return "Basic " + btoa(`${state.user}:${state.pass}`);
@@ -125,11 +168,77 @@
       el.className = kind || "";
     }
 
+    function markAuthenticated() {
+      if (state.authenticated) return;
+      state.authenticated = true;
+      document.getElementById("login-panel").classList.add("hidden");
+      document.getElementById("login-compact-panel").classList.remove("hidden");
+      document.getElementById("login-compact-text").textContent = `Conectado como ${state.user}`;
+      connectLiveFeed();
+    }
+
+    function markLoggedOut() {
+      state.authenticated = false;
+      document.getElementById("login-panel").classList.remove("hidden");
+      document.getElementById("login-compact-panel").classList.add("hidden");
+      if (liveSocket) { liveSocket.close(); liveSocket = null; }
+    }
+
     document.getElementById("login-btn").addEventListener("click", () => {
       state.user = document.getElementById("auth-user").value;
       state.pass = document.getElementById("auth-pass").value;
-      setStatus(document.getElementById("auth-status"), state.user ? `Credenciais guardadas nesta aba (não persistem).` : "", "ok");
+      setStatus(document.getElementById("auth-status"), state.user ? "Tentando…" : "", "ok");
+      // Confirmação real de que a credencial vale vem do primeiro pedido autenticado que
+      // der certo (seleção de conta ou carregamento do feed) -- não existe um endpoint só
+      // de "login" nesta API, é tudo HTTP Basic por pedido.
+      const active = document.querySelector(".account-list button.active");
+      if (active) selectAccount(state.selected, active);
     });
+
+    document.getElementById("switch-login-btn").addEventListener("click", markLoggedOut);
+
+    function connectLiveFeed() {
+      if (!state.user || !state.pass) return;
+      if (liveSocket && (liveSocket.readyState === WebSocket.OPEN || liveSocket.readyState === WebSocket.CONNECTING)) return;
+
+      const proto = location.protocol === "https:" ? "wss:" : "ws:";
+      const url = `${proto}//${location.host}/live?user=${encodeURIComponent(state.user)}&pass=${encodeURIComponent(state.pass)}`;
+      const connEl = document.getElementById("feed-connection");
+      liveSocket = new WebSocket(url);
+
+      liveSocket.addEventListener("open", () => setStatus(connEl, "Conectado.", "ok"));
+      liveSocket.addEventListener("message", (ev) => {
+        try { appendFeedEvent(JSON.parse(ev.data)); } catch {}
+      });
+      liveSocket.addEventListener("close", () => {
+        setStatus(connEl, "Desconectado — tentando de novo…", "err");
+        if (state.authenticated) setTimeout(connectLiveFeed, 3000);
+      });
+      liveSocket.addEventListener("error", () => {});
+    }
+
+    function appendFeedEvent(event) {
+      const feed = document.getElementById("feed");
+      const row = document.createElement("div");
+      row.className = "feed-row";
+
+      const head = document.createElement("div");
+      head.className = `feed-head ${event.level || "info"}`;
+      const time = event.timestamp ? new Date(event.timestamp).toLocaleTimeString() : "";
+      head.textContent = `${time} [${event.account || "?"}] ${event.type || "?"}`;
+      row.appendChild(head);
+
+      if (event.payload !== undefined) {
+        const pre = document.createElement("div");
+        pre.className = "feed-payload";
+        pre.textContent = JSON.stringify(event.payload);
+        row.appendChild(pre);
+      }
+
+      feed.appendChild(row);
+      while (feed.childElementCount > MAX_FEED_ROWS) feed.removeChild(feed.firstChild);
+      feed.scrollTop = feed.scrollHeight;
+    }
 
     async function loadAccounts() {
       const resp = await fetch("/api/accounts");
@@ -146,7 +255,7 @@
 
     async function selectAccount(name, btnEl) {
       document.querySelectorAll(".account-list button").forEach((b) => b.classList.remove("active"));
-      btnEl.classList.add("active");
+      if (btnEl) btnEl.classList.add("active");
       state.selected = name;
 
       const resp = await fetch(`/api/directive/${name}`, { headers: { Authorization: authHeader() } });
@@ -155,7 +264,8 @@
 
       if (resp.status === 401) {
         panel.classList.add("hidden");
-        setStatus(status, "Credenciais inválidas — confira usuário/senha e clique Entrar de novo.", "err");
+        markLoggedOut();
+        setStatus(document.getElementById("auth-status"), "Credenciais inválidas.", "err");
         return;
       }
       if (!resp.ok) {
@@ -164,6 +274,7 @@
         return;
       }
 
+      markAuthenticated();
       const directive = await resp.json();
       document.getElementById("directive-title").textContent = `Diretriz — ${name}`;
       document.getElementById("paused").checked = !!directive.paused;
@@ -191,6 +302,7 @@
       });
 
       if (resp.status === 401) {
+        markLoggedOut();
         setStatus(status, "Credenciais inválidas — não salvou nada.", "err");
         return;
       }

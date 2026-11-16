@@ -31,6 +31,14 @@ export function createDevlogClient(accountName: string, options?: ClientOptions)
     try {
       const ws = new WebSocket(`ws://localhost:${port}`);
       ws.addEventListener("open", () => {
+        // close() pode ter sido chamado enquanto esta conexão ainda estava em voo --
+        // sem essa checagem, um socket que só termina de abrir depois do close() nunca
+        // seria fechado, ficando pendente pra sempre (handle que nunca deixa o processo
+        // terminar sozinho). Descoberto implementando o subscriber de devlog (spec 0012).
+        if (closed) {
+          ws.close();
+          return;
+        }
         socket = ws;
       });
       ws.addEventListener("close", () => {

@@ -6,7 +6,10 @@
 import { timingSafeEqual } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import type { Socket } from "node:net";
+import { WebSocketServer } from "ws";
 import { createDevlogClient } from "../devlog/client.js";
+import { createDevlogSubscriber } from "../devlog/subscriber.js";
 import { listAccounts } from "../roles/account_role.js";
 import { readDirective, writeDirective, type Directive } from "./directive.js";
 
@@ -14,6 +17,7 @@ export const DIRECTIVES_PORT = 5000;
 
 const STATIC_PAGE_PATH = new URL("../../static/directives.html", import.meta.url);
 const ACCOUNT_NAME_PATTERN = /^\/api\/directive\/([a-zA-Z0-9_-]+)$/;
+const LIVE_FEED_PATH = "/live";
 
 // Conta "pseudo" só pra identificar a origem do evento no devlog -- não é uma conta de
 // jogo de verdade (constituição, regra 10: devlog é compartilhado entre processos).
@@ -24,9 +28,10 @@ export interface DirectivesServerHandle {
 }
 
 export interface DirectivesServerOptions {
-  /** Injetável só pra teste — produção usa sempre `accounts/` e `roles.json` reais. */
+  /** Injetável só pra teste — produção usa sempre `accounts/`, `roles.json` e o devlog real. */
   accountsDir?: string;
   rolesPath?: string;
+  devlogPort?: number;
 }
 
 export function startDirectivesServer(
@@ -40,8 +45,40 @@ export function startDirectivesServer(
       res.end(`internal error: ${err instanceof Error ? err.message : String(err)}`);
     });
   });
+
+  // Painel "ao vivo" (requisito novo, página única com diretriz + feed): repassa pro
+  // navegador cada evento do devlog (spec 0005) sem o navegador precisar alcançar a porta
+  // interna do devlog server (7788, nunca exposta pelo túnel) -- só esta porta (5000, já
+  // tunelada) importa de fora. Navegador não sabe mandar header Authorization num handshake
+  // de WebSocket, então a credencial aqui vem por query string, só pra este endpoint.
+  const wss = new WebSocketServer({ noServer: true });
+  server.on("upgrade", (req: IncomingMessage, socket: Socket, head: Buffer) => {
+    const url = new URL(req.url ?? "/", "http://localhost");
+    if (url.pathname !== LIVE_FEED_PATH || !isAuthorizedForLiveFeed(url)) {
+      socket.destroy();
+      return;
+    }
+    wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req));
+  });
+
+  const subscriber = createDevlogSubscriber(
+    (event) => {
+      const payload = JSON.stringify(event);
+      for (const client of wss.clients) {
+        if (client.readyState === client.OPEN) client.send(payload);
+      }
+    },
+    options.devlogPort !== undefined ? { port: options.devlogPort } : undefined
+  );
+
   server.listen(port);
-  return { close: () => server.close() };
+  return {
+    close: () => {
+      subscriber.close();
+      wss.close();
+      server.close();
+    },
+  };
 }
 
 async function handleRequest(
@@ -107,6 +144,16 @@ function isAuthorized(req: IncomingMessage): boolean {
 
   const user = decoded.slice(0, separatorIndex);
   const pass = decoded.slice(separatorIndex + 1);
+  return safeEqual(user, expectedUser) && safeEqual(pass, expectedPass);
+}
+
+function isAuthorizedForLiveFeed(url: URL): boolean {
+  const expectedUser = process.env.DIRECTIVES_USER;
+  const expectedPass = process.env.DIRECTIVES_PASS;
+  if (!expectedUser || !expectedPass) return false;
+
+  const user = url.searchParams.get("user") ?? "";
+  const pass = url.searchParams.get("pass") ?? "";
   return safeEqual(user, expectedUser) && safeEqual(pass, expectedPass);
 }
 

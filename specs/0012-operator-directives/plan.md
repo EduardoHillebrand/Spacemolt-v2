@@ -139,6 +139,75 @@ não existir na resposta, nenhum POI "bate" com a preferência, e o comportament
 padrão de qualquer forma (nunca um erro, só a preferência fica sem efeito até os campos
 serem confirmados).
 
+## Revisão (2026-11-15): feed ao vivo na mesma página
+
+Depois de ver a página publicada, o usuário pediu pra ela virar um terço diretriz + dois
+terços "o que cada conta está fazendo agora", em vez de esperar `0013-dashboard-ui`. Isso
+acrescenta:
+
+```
+app/
+  devlog/
+    subscriber.ts            # createDevlogSubscriber(onEvent) -- consome TODO evento do canal (spec 0005), reconecta sozinho
+    subscriber.test.ts
+  directives/
+    server.ts                  # ganha upgrade de WebSocket em /live, bridge pro devlog interno
+static/
+  directives.html               # layout de duas colunas (grid 1fr/2fr, 1 coluna no mobile)
+```
+
+### `app/devlog/subscriber.ts`
+
+```ts
+function createDevlogSubscriber(onEvent: (event: DevlogEvent) => void, options?): { close(): void };
+```
+
+Não é `client.ts` (esse é pra emitir, usado pelas contas) — é o papel inverso, consumir
+tudo, usado por quem só observa (este servidor, e futuramente `0013`). Reconecta com
+backoff curto (5s default — quem só escuta quer voltar rápido, diferente do emissor que
+pode esperar mais sem perder nada crítico).
+
+### `/live` no `server.ts` da diretriz
+
+O navegador não alcança a porta interna do devlog (7788, nunca exposta pelo túnel) — o
+servidor de diretriz (porta 5000, já tunelada) abre um WebSocket próprio em `/live`,
+conecta internamente no devlog via `createDevlogSubscriber`, e repassa cada evento pra
+todo cliente `/live` conectado (broadcast simples, sem filtro).
+
+**Auth por query string, só neste endpoint**: o `WebSocket` nativo do navegador não deixa
+mandar header `Authorization` no handshake — a única forma prática de autenticar é via
+query string (`/live?user=...&pass=...`) ou um esquema de sub-protocolo. Optamos por query
+string, mesma verificação de usuário/senha de `isAuthorized`, só a origem do dado muda
+(`isAuthorizedForLiveFeed`). Implementado com `WebSocketServer({ noServer: true })` +
+`server.on("upgrade", ...)` manual, pra poder recusar a credencial errada **antes** do
+handshake de WebSocket completar (`socket.destroy()`), em vez de aceitar a conexão e só
+depois decidir fechar.
+
+### `static/directives.html` — layout e login
+
+`display: grid; grid-template-columns: 1fr 2fr` (coluna da diretriz : coluna do feed),
+caindo pra uma coluna só abaixo de 760px (celular). O painel de login desaparece depois do
+primeiro pedido autenticado que der certo (seleção de conta, ou o próprio feed abrindo) —
+fica um indicador compacto "Conectado como X" com um botão "trocar" que reabre o formulário
+(pedido do usuário: login não deve ficar pedindo de novo a cada interação).
+
+### Bugs reais encontrados implementando isto (não só do feed)
+
+- **Corrida "conecta depois de fechar"** em `app/devlog/client.ts` **e** no novo
+  `subscriber.ts`: se `close()` é chamado enquanto uma tentativa de conexão ainda está em
+  voo, o `open` que chega depois nunca era descartado — o socket ficava pendurado pra
+  sempre (handle que nunca deixa o processo terminar sozinho). Existia desde a spec `0005`
+  (`client.ts`), só nunca tinha sido exercitado porque contas de verdade nunca chamam
+  `close()` com uma conexão pendente em condições normais; os testes do `subscriber.ts`
+  expuseram isso de cara. Corrigido nos dois arquivos: o handler de `open` agora checa
+  `closed` antes de guardar o socket, fechando-o imediatamente se já foi pedido pra parar.
+- **Colisão de porta de teste entre arquivos**: `node --test` roda arquivos de teste
+  isolados em processos separados, mas em paralelo — portas de rede continuam sendo um
+  recurso global do SO. `server.test.ts` e `subscriber.test.ts` escolheram a mesma porta de
+  devlog de teste (`17791`) de forma independente, causando travamentos intermitentes só
+  quando os dois corriam ao mesmo tempo. Corrigido reservando faixas de porta sem overlap
+  por arquivo (documentado como comentário em cada um).
+
 ## O que NÃO entra aqui
 
 - Dashboard de observabilidade (`0013-dashboard-ui`, renumerada) — só a página mínima de

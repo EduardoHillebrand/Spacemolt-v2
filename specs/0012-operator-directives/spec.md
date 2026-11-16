@@ -2,9 +2,10 @@
 
 ## O quê
 
-Existe um jeito de o operador (humano) ajustar o comportamento de uma conta **já em
-execução**, sem editar código nem reiniciar o processo: uma diretriz por conta, editável
-por uma página web simples, com três partes —
+Existe uma única página que o operador (humano) usa pra acompanhar e ajustar as contas em
+execução, sem editar código nem reiniciar nenhum processo — dividida em duas partes:
+
+**Um terço da tela: a diretriz**, por conta —
 
 1. **Preferências estruturadas**, namespaced por skill (ex.: `mining.preferredResource:
    "iron"`), que o Planner da skill correspondente aplica diretamente, mecanicamente, sem
@@ -13,6 +14,11 @@ por uma página web simples, com três partes —
    fosse consultar o Decider — nunca dispara uma consulta que não aconteceria de outro
    jeito.
 3. **Um interruptor de pausa**, que faz a conta parar de agir até ser despausada.
+
+**Dois terços da tela: o que cada conta está fazendo agora**, em tempo real — um feed ao
+vivo do canal de devlog (spec `0005`), a mesma página, sem precisar abrir outra ferramenta
+pra ver o efeito de uma diretriz que acabou de mudar (requisito acrescentado em 2026-11-15,
+depois de ver a página publicada — ver `plan.md`, nota de revisão).
 
 ## Por quê
 
@@ -57,16 +63,27 @@ por uma página web simples, com três partes —
    aquele, `log/infra.md`), então toda tentativa de autenticação que falhar é registrada
    via devlog (nunca a senha tentada, constituição regra 12) — visibilidade mínima de
    tentativa de força bruta, sem precisar implementar rate-limit próprio nesta versão.
+9. **O feed ao vivo mostra todo evento de todas as contas**, igual qualquer outro
+   consumidor do canal de devlog (constituição, regra 10: compartilhado, qualquer um pode
+   ouvir) — sem histórico (um refresh da página perde o que já passou, mesma limitação do
+   próprio canal, spec `0005`, requisito 5) e sem filtro por conta nesta versão.
+10. **O feed também exige autenticação** — mesma credencial da diretriz, mas repassada por
+    query string (não por header `Authorization`) porque o `WebSocket` nativo do navegador
+    não permite customizar headers no handshake. Sem credencial, a conexão é recusada antes
+    de completar o handshake.
+11. **Login de uma vez só**: depois que o primeiro pedido autenticado dá certo (seleção de
+    conta, ou o próprio feed), o formulário de usuário/senha desaparece da tela — fica um
+    indicador compacto ("Conectado como X") com um jeito de trocar de credencial se
+    precisar. Nunca pede de novo em toda interação.
 
 ## Fora do escopo desta spec
 
 - **Troca de papel** — isso continua sendo `0002`/`scripts/set-role.ts`; esta spec não
   sobrepõe nem duplica aquilo.
-- **Dashboard de observabilidade completo** (consumir o devlog, histórico, métricas, UI
-  mobile) — isso é `0013-dashboard-ui` (renumerada do backlog anterior), que continua
-  separada. Esta spec entrega só a página mínima necessária pra editar a diretriz — pode
-  crescer depois pra dentro do mesmo painel de `0013`, ou ficar como página própria; essa
-  decisão de UI fica pra quando `0013` for especificada.
+- **Dashboard de observabilidade completo** (histórico persistente além do que já está na
+  tela, métricas agregadas, filtro por conta/tipo de evento, gráficos) — isso continua
+  sendo `0013-dashboard-ui`. O que entrou aqui é só o feed ao vivo cru, sem histórico nem
+  filtro — suficiente pra ver o efeito de uma diretriz, não um dashboard completo.
 - **Preferências estruturadas concretas pra trading/crafting** (`0008`/`0011`) — o `schema`
   é genérico (`preferences` namespaced por skill) e já comporta isso sem spec nova; nenhum
   campo concreto é consumido por essas duas skills ainda, só por `mining`.
