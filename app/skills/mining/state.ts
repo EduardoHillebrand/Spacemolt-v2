@@ -34,15 +34,29 @@ export function hasWorkableNode(poi: PoiSnapshot): boolean {
 }
 
 // Não confirmado — nenhuma fonte lida nomeia o campo que marca um POI como minerável na
-// listagem de get_system (só get_poi, já no POI, confirma via `resources`). Fica só aqui
-// (não em core/system_state.ts) porque é específico de mineração.
+// listagem de get_system (só get_poi, já no POI, confirma via `resources`), nem o campo de
+// tipo de recurso usado pela preferência da spec 0012. Fica só aqui (não em
+// core/system_state.ts) porque é específico de mineração.
 interface MinablePoi {
   id: string;
   minable?: boolean;
+  resource_type?: string;
 }
 
-export async function findMinablePoi(ctx: SkillContext): Promise<string | null> {
+/**
+ * `preferredResource` (spec 0012, diretriz do operador) é preferência leve: se nenhum POI
+ * minerável bater com ele (campo ausente, ou nenhum compatível agora), cai pro primeiro
+ * POI minerável sem filtro — nunca devolve `null` só porque a preferência não foi atendida
+ * (constituição, regra 6: preferência não atendida não é erro).
+ */
+export async function findMinablePoi(ctx: SkillContext, preferredResource?: string): Promise<string | null> {
   const system = await readSystem(ctx);
-  const candidate = ((system?.pois ?? []) as MinablePoi[]).find((poi) => poi.minable === true);
-  return candidate?.id ?? null;
+  const minable = ((system?.pois ?? []) as MinablePoi[]).filter((poi) => poi.minable === true);
+
+  if (preferredResource) {
+    const preferredMatch = minable.find((poi) => poi.resource_type === preferredResource);
+    if (preferredMatch) return preferredMatch.id;
+  }
+
+  return minable[0]?.id ?? null;
 }

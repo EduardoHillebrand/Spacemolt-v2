@@ -24,6 +24,14 @@ export type ExecutorResult =
 export interface SkillContext {
   session: GameSession;
   objective: string;
+  // Diretriz do operador (spec 0012) — já recortada pro namespace da skill ativa antes de
+  // chegar aqui (run_account_loop.ts), nunca o objeto `preferences` inteiro de todas as
+  // skills. `note` é texto livre: só vale a pena repassar ao Decider quando ele já for
+  // consultado por outro motivo, nunca dispara uma consulta por si só.
+  directive: {
+    preferences: Record<string, unknown>;
+    note: string;
+  };
   memory: {
     recall: (query: string, topK?: number) => Promise<MemoryEntry[]>;
     remember: (text: string, context?: string) => Promise<void>;

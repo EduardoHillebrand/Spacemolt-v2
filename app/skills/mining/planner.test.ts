@@ -19,8 +19,8 @@ function fakeSession(handlers: Record<string, Handler>) {
   return session;
 }
 
-function ctxFor(session: GameSession): SkillContext {
-  return { session } as SkillContext;
+function ctxFor(session: GameSession, preferences: Record<string, unknown> = {}): SkillContext {
+  return { session, directive: { preferences, note: "" } } as SkillContext;
 }
 
 function queryOk(result: unknown): CommandResult {
@@ -94,4 +94,30 @@ test("cargo não cheio, nenhum POI minerável em lugar nenhum: espera", async ()
   });
   const plan = await planMining(ctxFor(session));
   assert.deepEqual(activityOf(plan), { kind: "wait", reason: "no_minable_poi_found" });
+});
+
+test("diretriz 0012 com preferredResource: prefere o POI minerável compatível entre vários candidatos", async () => {
+  const session = fakeSession({
+    "spacemolt:get_ship": () => queryOk({ docked: false, cargo_used: 10, cargo_capacity: 100 }),
+    "spacemolt:get_poi": () => queryOk({ resources: [{ too_sparse: true }] }),
+    "spacemolt:get_system": () =>
+      queryOk({
+        pois: [
+          { id: "belt_ice", minable: true, resource_type: "ice" },
+          { id: "belt_iron", minable: true, resource_type: "iron" },
+        ],
+      }),
+  });
+  const plan = await planMining(ctxFor(session, { preferredResource: "iron" }));
+  assert.deepEqual(activityOf(plan), { kind: "travelToPoi", poiId: "belt_iron" });
+});
+
+test("diretriz 0012 com preferredResource sem nenhum POI compatível: cai pro primeiro minerável, nunca espera por isso", async () => {
+  const session = fakeSession({
+    "spacemolt:get_ship": () => queryOk({ docked: false, cargo_used: 10, cargo_capacity: 100 }),
+    "spacemolt:get_poi": () => queryOk({ resources: [{ too_sparse: true }] }),
+    "spacemolt:get_system": () => queryOk({ pois: [{ id: "belt_ice", minable: true, resource_type: "ice" }] }),
+  });
+  const plan = await planMining(ctxFor(session, { preferredResource: "iron" }));
+  assert.deepEqual(activityOf(plan), { kind: "travelToPoi", poiId: "belt_ice" });
 });

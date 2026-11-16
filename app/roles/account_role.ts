@@ -26,6 +26,11 @@ export function getRole(accountName: string, rolesPath: string = DEFAULT_ROLES_P
   return entry;
 }
 
+/** Lista todas as contas conhecidas e seus papéis (spec 0012, página de diretriz). */
+export function listAccounts(rolesPath: string = DEFAULT_ROLES_PATH): Record<string, RoleEntry> {
+  return readRolesFile(rolesPath);
+}
+
 export function getRoleDefinition(role: Role): RoleDefinition {
   const def = CATALOG[role];
   if (!def) {

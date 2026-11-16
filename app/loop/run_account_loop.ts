@@ -1,6 +1,7 @@
 // O loop em si (spec 0006): decide qual skill rodar pro papel da conta, mantém o ciclo
 // vivo, aciona replanejamento, nunca para por erro (constituição, regras 2, 2.1, 6).
 import { ask } from "../core/decider.js";
+import { readDirective } from "../directives/directive.js";
 import { createDevlogClient, type DevlogClient } from "../devlog/client.js";
 import { connect } from "../game_client.js";
 import { search as searchKnowledgeBase } from "../knowledge/query.js";
@@ -79,6 +80,7 @@ export async function runAccountLoop(accountName: string): Promise<never> {
   const ctx: SkillContext = {
     session,
     objective: "",
+    directive: { preferences: {}, note: "" },
     memory: {
       recall: (query, topK) => recall(accountName, query, topK),
       remember: (text, context) => remember(accountName, text, context),
@@ -92,8 +94,31 @@ export async function runAccountLoop(accountName: string): Promise<never> {
   let activeSkills = loadActiveSkills(accountName, ctx, devlog);
   let activeSkill = chooseSkill(activeSkills);
   let state: LoopState = { plan: null, consecutiveErrors: 0 };
+  let wasPaused = false;
 
   while (true) {
+    // Diretriz do operador (spec 0012) relida a cada ciclo -- efeito imediato, sem
+    // reiniciar o processo. `paused` interrompe antes de tocar planner/executor; o resto
+    // (preferences recortadas pro namespace da skill ativa, note) alimenta o ctx mesmo
+    // quando não há skill ativa ainda, pra já valer no primeiro ciclo real.
+    const directive = readDirective(accountName);
+    if (directive.paused) {
+      if (!wasPaused) {
+        devlog.emit({ type: "account_paused", level: "info" });
+        wasPaused = true;
+      }
+      await sleep(NO_SKILL_POLL_MS);
+      continue;
+    }
+    if (wasPaused) {
+      devlog.emit({ type: "account_resumed", level: "info" });
+      wasPaused = false;
+    }
+    ctx.directive = {
+      preferences: directive.preferences[activeSkill?.name ?? ""] ?? {},
+      note: directive.note,
+    };
+
     if (activeSkill === null) {
       await sleep(NO_SKILL_POLL_MS);
       activeSkills = loadActiveSkills(accountName, ctx, devlog);

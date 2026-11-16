@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SpaceMolt — Diretrizes</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0f1115;
+    --panel: #171a21;
+    --border: #2a2e37;
+    --text: #e6e8ec;
+    --text-dim: #8b92a3;
+    --accent: #3ddc97;
+    --warn: #ffb300;
+    --danger: #ff5c5c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 16px;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.4 system-ui, -apple-system, Segoe UI, sans-serif;
+  }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  p.subtitle { color: var(--text-dim); margin: 0 0 20px; font-size: 13px; }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 4px; text-transform: uppercase; }
+  input[type="text"], input[type="password"], textarea, select {
+    width: 100%;
+    background: #0d0f13;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font: inherit;
+    margin-bottom: 14px;
+  }
+  textarea { min-height: 90px; resize: vertical; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .row > div { flex: 1; min-width: 160px; }
+  button {
+    background: var(--accent);
+    color: #06140e;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 16px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .checkbox-row input { width: auto; margin: 0; }
+  #status { font-size: 13px; margin-top: 10px; min-height: 18px; }
+  #status.ok { color: var(--accent); }
+  #status.err { color: var(--danger); }
+  .account-list button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .account-list button.active { border-color: var(--accent); color: var(--accent); }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+  <h1>SpaceMolt — Diretrizes do operador</h1>
+  <p class="subtitle">Ajuste fino por conta — preferência estruturada, nota livre e pausa. Efeito no próximo ciclo, sem reiniciar nada (spec 0012).</p>
+
+  <div class="panel">
+    <label for="auth-user">Usuário</label>
+    <input type="text" id="auth-user" autocomplete="username" />
+    <label for="auth-pass">Senha</label>
+    <input type="password" id="auth-pass" autocomplete="current-password" />
+    <button id="login-btn">Entrar</button>
+    <div id="auth-status" style="font-size:12px;color:var(--text-dim);margin-top:8px"></div>
+  </div>
+
+  <div class="panel">
+    <label>Contas</label>
+    <div class="account-list" id="account-list">Carregando…</div>
+  </div>
+
+  <div class="panel hidden" id="directive-panel">
+    <h2 id="directive-title" style="font-size:15px;margin-top:0"></h2>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="paused" />
+      <label for="paused" style="margin:0">Pausada (a conta para de agir até desmarcar)</label>
+    </div>
+
+    <label for="preferred-resource">Recurso preferido na mineração (ex.: iron) — vazio = sem preferência</label>
+    <input type="text" id="preferred-resource" placeholder="iron" />
+
+    <label for="note">Nota livre (repassada ao Decider quando ele já for consultado por alguma skill)</label>
+    <textarea id="note" placeholder="Ex.: foco em acumular crédito pra trocar de nave"></textarea>
+
+    <button id="save-btn">Salvar diretriz</button>
+    <button class="secondary" id="reload-btn" type="button">Recarregar</button>
+    <div id="status"></div>
+  </div>
+
+  <script>
+    const state = { user: "", pass: "", accounts: [], selected: null };
+
+    function authHeader() {
+      return "Basic " + btoa(`${state.user}:${state.pass}`);
+    }
+
+    function setStatus(el, text, kind) {
+      el.textContent = text;
+      el.className = kind || "";
+    }
+
+    document.getElementById("login-btn").addEventListener("click", () => {
+      state.user = document.getElementById("auth-user").value;
+      state.pass = document.getElementById("auth-pass").value;
+      setStatus(document.getElementById("auth-status"), state.user ? `Credenciais guardadas nesta aba (não persistem).` : "", "ok");
+    });
+
+    async function loadAccounts() {
+      const resp = await fetch("/api/accounts");
+      state.accounts = await resp.json();
+      const list = document.getElementById("account-list");
+      list.innerHTML = "";
+      for (const acc of state.accounts) {
+        const btn = document.createElement("button");
+        btn.textContent = `${acc.name} — ${acc.role}`;
+        btn.addEventListener("click", () => selectAccount(acc.name, btn));
+        list.appendChild(btn);
+      }
+    }
+
+    async function selectAccount(name, btnEl) {
+      document.querySelectorAll(".account-list button").forEach((b) => b.classList.remove("active"));
+      btnEl.classList.add("active");
+      state.selected = name;
+
+      const resp = await fetch(`/api/directive/${name}`, { headers: { Authorization: authHeader() } });
+      const panel = document.getElementById("directive-panel");
+      const status = document.getElementById("status");
+
+      if (resp.status === 401) {
+        panel.classList.add("hidden");
+        setStatus(status, "Credenciais inválidas — confira usuário/senha e clique Entrar de novo.", "err");
+        return;
+      }
+      if (!resp.ok) {
+        panel.classList.add("hidden");
+        setStatus(status, `Erro ao carregar diretriz (${resp.status}).`, "err");
+        return;
+      }
+
+      const directive = await resp.json();
+      document.getElementById("directive-title").textContent = `Diretriz — ${name}`;
+      document.getElementById("paused").checked = !!directive.paused;
+      document.getElementById("preferred-resource").value = (directive.preferences && directive.preferences.mining && directive.preferences.mining.preferredResource) || "";
+      document.getElementById("note").value = directive.note || "";
+      panel.classList.remove("hidden");
+      setStatus(status, "Carregada.", "ok");
+    }
+
+    document.getElementById("save-btn").addEventListener("click", async () => {
+      if (!state.selected) return;
+      const status = document.getElementById("status");
+      const preferredResource = document.getElementById("preferred-resource").value.trim();
+
+      const patch = {
+        paused: document.getElementById("paused").checked,
+        note: document.getElementById("note").value,
+        preferences: { mining: preferredResource ? { preferredResource } : {} },
+      };
+
+      const resp = await fetch(`/api/directive/${state.selected}`, {
+        method: "POST",
+        headers: { Authorization: authHeader(), "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+
+      if (resp.status === 401) {
+        setStatus(status, "Credenciais inválidas — não salvou nada.", "err");
+        return;
+      }
+      if (!resp.ok) {
+        setStatus(status, `Erro ao salvar (${resp.status}).`, "err");
+        return;
+      }
+      setStatus(status, "Salvo — efeito no próximo ciclo da conta.", "ok");
+    });
+
+    document.getElementById("reload-btn").addEventListener("click", () => {
+      const active = document.querySelector(".account-list button.active");
+      if (active && state.selected) selectAccount(state.selected, active);
+    });
+
+    loadAccounts();
+  </script>
+</body>
+</html>

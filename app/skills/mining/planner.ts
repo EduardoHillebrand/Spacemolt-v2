@@ -33,7 +33,11 @@ export async function planMining(ctx: SkillContext): Promise<Plan> {
     return planFor({ kind: "mine" });
   }
 
-  const nextPoiId = await findMinablePoi(ctx);
+  // Diretriz do operador (spec 0012): preferência leve de recurso, aplicada só na escolha
+  // de qual POI ir a seguir — nunca abandona um node já produtivo (o ramo acima já
+  // resolveu isso) só porque não é o recurso preferido.
+  const preferredResource = ctx.directive.preferences.preferredResource as string | undefined;
+  const nextPoiId = await findMinablePoi(ctx, preferredResource);
   if (nextPoiId === null) {
     return planFor({ kind: "wait", reason: "no_minable_poi_found" });
   }
