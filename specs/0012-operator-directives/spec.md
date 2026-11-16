@@ -52,6 +52,11 @@ por uma página web simples, com três partes —
 7. **Escrever a diretriz nunca toca estado do jogo nem `roles.json`** — só o arquivo da
    própria conta, mesma garantia que `0002` já tem pra troca de papel (validação manual,
    critério de sucesso 3 daquela spec).
+8. **A página é alcançável de fora** (via o túnel Cloudflare já existente,
+   `spacemolt.hillebrand.ia.br`, mesma porta que o dashboard antigo usava — substitui
+   aquele, `log/infra.md`), então toda tentativa de autenticação que falhar é registrada
+   via devlog (nunca a senha tentada, constituição regra 12) — visibilidade mínima de
+   tentativa de força bruta, sem precisar implementar rate-limit próprio nesta versão.
 
 ## Fora do escopo desta spec
 

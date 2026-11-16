@@ -63,9 +63,11 @@ Rotas:
   do projeto antigo) — auth básica.
 - `GET /` — serve `static/directives.html`.
 
-Porta: `DIRECTIVES_PORT = 7790` (constante nova, ao lado de `DEVLOG_PORT = 7788`
-em `app/devlog/server.ts` — não reaproveita a mesma porta, servidores HTTP e WS
-são protocolos diferentes mesmo rodando ambos localmente).
+Porta: `DIRECTIVES_PORT = 5000` — **não é uma porta nova**: `log/infra.md` já registra que o
+Cloudflare Tunnel existente (`hillebrand-ia`) roteia `spacemolt.hillebrand.ia.br` pra essa
+porta, exatamente onde rodava o dashboard Flask do projeto antigo (confirmado pelo usuário:
+este servidor **substitui** aquele). Reaproveitar a porta significa que nenhuma mudança é
+necessária no `config.yml` do túnel — só rodar este processo nela em vez do antigo.
 
 Auth básica: compara contra `process.env.DIRECTIVES_USER`/`DIRECTIVES_PASS` lidos de
 `.env` — **nunca aparece em log nem devlog** (mesma garantia de `scrub()`, spec `0005`,
@@ -153,9 +155,15 @@ serem confirmados).
 - **`node --env-file` pode não funcionar igual em todo setup (PM2, Windows)** — precisa de
   validação manual (task 8); se não funcionar, cai pra uma leitura manual de `.env` sem
   dependência nova (poucas linhas, não justifica `dotenv` só por isso).
-- **Servidor HTTP novo é mais uma superfície exposta** — mitigado por auth básica + escrita
-  bloqueada sem credencial configurada; não expõe nada do jogo em si, só o arquivo de
-  diretriz (não é segredo, mas ainda assim não deve ser editável por qualquer um).
+- **Servidor HTTP novo é mais uma superfície exposta, e esta é alcançável de fora** (pedido
+  explícito do usuário — substitui o dashboard antigo no mesmo túnel/porta, `log/infra.md`).
+  Mitigação: a confidencialidade da senha em trânsito depende do Cloudflare Tunnel
+  terminar TLS na borda (`spacemolt.hillebrand.ia.br` com DNS proxied — já era a postura do
+  dashboard antigo, não uma regressão); toda tentativa de auth que falhar é registrada via
+  devlog (`type: "directive_auth_failed"`, sem nunca logar a senha tentada, mesma garantia
+  de `scrub()`) pra dar visibilidade de tentativa de força bruta, sem um rate-limit
+  dedicado nesta primeira versão — se abuso real aparecer, é mais barato resolver no
+  Cloudflare (regra de WAF/rate-limit na borda) que reimplementar isso aqui.
 
 ## Alternativas consideradas e descartadas
 

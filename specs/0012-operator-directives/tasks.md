@@ -17,7 +17,10 @@ Cada item é um passo pequeno e checável. Commit direto na `main` ao fechar cad
 3. [ ] **`app/directives/server.ts`**: servidor `node:http` nativo — `GET /api/accounts`
    (público, lê `roles.json`), `GET`/`POST /api/directive/:account` (auth básica via
    `DIRECTIVES_USER`/`DIRECTIVES_PASS`), `GET /` serve `static/directives.html`. Porta
-   `DIRECTIVES_PORT = 7790`.
+   `DIRECTIVES_PORT = 5000` (mesma porta que o túnel Cloudflare já roteia pra
+   `spacemolt.hillebrand.ia.br`, `log/infra.md` — substitui o dashboard antigo, nenhuma
+   mudança necessária no `config.yml` do túnel). Toda falha de autenticação emite
+   `directive_auth_failed` via devlog (nunca a senha tentada).
 
 4. [ ] **`static/directives.html`**: página única — lista de contas, formulário por conta
    (recurso preferido, nota livre, toggle de pausa), sem framework de frontend.
